@@ -1,0 +1,24 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
+  "extends": [
+    "eslint:recommended", "google"
+  ],
+  "rules": {
+    // Enough cases fail with this that we have to disable it.
+    "indent": 0,
+    "max-len": [2, {
+      "ignorePattern": "^\\s*import|^\\s*it\\(|^\\s*describe\\(",
+      "ignoreUrls": true
+    }],
+    "require-atomic-updates": 0,
+    "require-jsdoc": 0,
+    "valid-jsdoc": 0
+  }
+}

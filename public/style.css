@@ -1,0 +1,327 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+* {
+  box-sizing: border-box;
+}
+body {
+  font: 1em/1.5 system-ui, sans-serif;
+  margin: 0;
+}
+h1 {
+  color: #eee;
+  font-weight: 400;
+  font-size: 1.5em;
+  line-height: 1;
+  margin: 0;
+}
+h2 {
+  font-size: 2.25em;
+  font-weight: 300;
+}
+h1, h2, h3 {
+  font-family: Google Sans, system-ui, sans-serif;
+}
+
+.topbar {
+  align-items: center;
+  background: #333;
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: 1fr auto;
+  padding: 1em;
+}
+.topbar > div {
+  align-items: center;
+  display: flex;
+}
+.policies {
+  color: #eee;
+  margin-right: 1em;
+}
+.policies:hover {
+  color: #eee;
+  text-decoration: underline;
+}
+.g-signin2 {
+  min-height: 36px; /* Needed here because the component CSS is lazy-loaded. */
+}
+a, a:hover, a:focus, a:active {
+  color: hsl(218, 99%, 58%);
+}
+
+.container {
+  background-color: hsl(0,0%,96%);
+  padding: 2em;
+}
+.intro {
+  margin: 0 auto;
+  text-align: center;
+  width: 48em;
+}
+.results {
+  width: 72em;
+  max-width: 100%;
+  margin: 1em auto;
+  padding: 1em 0;
+  text-align: center;
+}
+
+aside {
+  font-size: 0.9em;
+  margin: 2em auto;
+  width: 36em;
+  font-style: italic;
+  color: #777;
+}
+aside > strong {
+  color: #000;
+}
+
+form {
+  max-width: 36em;
+  margin: 2em auto;
+  text-align: left;
+}
+
+.form-field {
+  margin-bottom: 1em;
+}
+.form-subfield {
+  margin-top: 1em;
+}
+.form-action {
+  margin-top: 2em;
+}
+label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9em;
+  margin-bottom: 0.4em;
+}
+label > em {
+  color: #777;
+  font-weight: 400;
+}
+input, select, button {
+  display: inline-block;
+  font: inherit;
+  height: 2.5em;
+  padding: 0.5em;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+select[disabled] {
+  color: transparent;
+}
+button {
+  border: 0;
+  background-color: hsl(218, 99%, 58%);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+}
+button:hover,
+button:active,
+button:focus {
+  /* background-color: hsl(217, 88%, 52%); */
+  background-color: hsl(218, 99%, 50%);
+}
+
+button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.col2 {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+
+.results-heading {
+  color: #777;
+  font-size: 0.9em;
+  font-weight: 500;
+  letter-spacing: 2px;
+  margin: 3rem 0;
+  text-transform: uppercase;
+}
+
+.metric-results {
+  border-top: 1px solid #eee;
+  margin: 3em 0;
+  padding-top: 3em;
+}
+
+.metric-name {
+  margin: 0 0 1.5em;
+}
+
+.metric-shortname {
+  font-size: 4em;
+  font-weight: 500;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  margin: 0;
+}
+.metric-fullname {
+  color: #777;
+  text-decoration: none;
+}
+.metric-fullname:hover,
+.metric-fullname:focus,
+.metric-fullname:active {
+  text-decoration: underline;
+}
+
+.metric-fullname > em {
+  color: #777;
+  text-decoration: none!important;
+  font-style: italics;
+}
+
+.metric-device-results {
+  font-size: 1.1em;
+}
+.metric-device-result {
+  background: transparent 0 calc(50% + 0em) no-repeat;
+  background-size: 1.3em;
+  display: inline-block;
+  margin: 0.5em;
+  /* padding-left: 2em; */
+}
+
+.metric-device-result.all {
+  /* background-image: url(icons/devices.svg); */
+}
+.metric-device-result.desktop {
+  /* background-image: url(icons/desktop.svg); */
+}
+.metric-device-result.mobile {
+  /* background-image: url(icons/mobile.svg); */
+  padding-left: 1.6em;
+}
+
+.metric-device-value {
+  background-color: hsl(0, 0%, 50%);
+  color: #fff;
+  padding: 0.25em 0.5em;
+  border-radius: 4px;
+  margin: 0 0.5em;
+}
+.metric-device-value.good {
+  background-color: hsl(150, 92%, 42%);
+}
+.metric-device-value.poor {
+  background-color: hsl(4, 100%, 63%);
+}
+.metric-device-value.ni {
+  background-color: hsl(39, 100%, 50%);
+}
+
+.histogram, .timeline {
+  margin: 4em 0;
+}
+.histogram {
+  height: 500px;
+}
+.timeline {
+  height: 300px;
+}
+
+.results-breakdown-heading {
+  font-size: 2.5em;
+  margin: 0;
+  padding-top: 3rem;
+  border-top: 1px solid #eee;
+  font-weight: 500;
+}
+.results-breakdown-meta {
+
+}
+
+
+table {
+  --gap: 1.6rem;
+  --pad: 0.6rem;
+  table-layout: fixed;
+}
+table {
+  border-collapse: collapse;
+  margin: 4em 0;
+  max-width: 100%;
+  width: 100%;
+}
+table th {
+  background-color: hsla(0,0,0,.05);
+  vertical-align: bottom;
+}
+table th,
+table td {
+  padding: var(--pad);
+  text-align: left;
+  vertical-align: top;
+}
+
+table td, table th {
+  border-bottom: 1px solid hsla(0, 0%,0%,.1);
+  vertical-align: middle;
+}
+
+.dimension {
+  min-width: 12em;
+  padding: 1em var(--pad);
+}
+
+.segment {
+  min-width: 12em;
+  padding: 1em var(--pad);
+  width: 22%;
+}
+
+.metric {
+  text-align: center;
+  width: 6em;
+}
+
+.result {
+  border-radius: 4px;
+  padding: 0.4em;
+  text-align: right;
+  white-space: nowrap;
+}
+.result.good {
+  background-color: hsla(150, 92%, 42%, 0.8);
+}
+.result.poor {
+  background-color: hsl(4, 100%, 63%, 0.8);
+}
+.result.ni {
+  background-color: hsl(39, 100%, 50%, 0.8);
+}
+
+[hidden] {
+  display: none;
+}
+main {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.ready main {
+  opacity: 1;
+}
+

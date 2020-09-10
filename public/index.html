@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2020 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Web Vitals Report</title>
+  <meta name="google-signin-client_id" content="668260105875-k5udm157fprqc7hv5blh9q8qmpmbotq5.apps.googleusercontent.com">
+  <meta name="google-signin-scope" content="https://www.googleapis.com/auth/analytics.readonly">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Web Vitals Report</h1>
+    <div>
+      <a class="policies" href="https://policies.google.com/terms">Terms</a>
+      <a class="policies" href="https://policies.google.com/privacy">Privacy Policy</a>
+      <!-- The Sign-in button. This will run `self.onSignIn()` on success. -->
+      <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    </div>
+  </header>
+  <main id="content">
+    <div class="container">
+      <div class="intro">
+        <h2>Create your Web Vitals report</h2>
+        <p>This tool can be used to create a Web Vitals report for any site that uses the <a href="https://github.com/GoogleChrome/web-vitals">web-vitals</a> JavaScript library to <a href="https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics">send data to Google Analytics.</a> Use the fields below to pick your account and date rage, as well as any custom segment you want to use.</p>
+
+        <form id="config">
+          <div class="form-field">
+            <label>1. Select a Google Analytics account</label>
+            <select id="view-id" disabled>
+              <option>&nbsp;</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>2. Choose a date range</label>
+            <select id="date-range" disabled>
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="28">Last 28 days</option>
+              <option value="-1">Custom range</option>
+            </select>
+            <div id="date-range-picker" class="col2 form-subfield" hidden>
+              <div class="form-field">
+                <label>Start date</label>
+                <input id="start-date" type="date" />
+              </div>
+              <div class="form-field">
+                <label>End date</label>
+                <input id="end-date" type="date" />
+              </div>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>3. Compare segments</label>
+            <select id="segmentsRecommended">
+              <option value="-15,-14">Desktop Traffic vs Mobile Traffic</option>
+              <option value="-2,-3">New Users vs. Returning Users</option>
+              <option value="-19,-12">Bounced Sessions vs. Non-bounce Sessions</option>
+              <option value="-102,-103">Converters vs. Non-converters</option>
+              <option value="">Choose segments</option>
+            </select>
+
+            <div id="segment-picker-custom" class="col2 form-subfield" hidden>
+              <div class="form-field">
+                <label>First segment</label>
+                <select id="segmentA" disabled>
+                  <option>&nbsp;</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Second segment</label>
+                <select id="segmentB" disabled>
+                  <option>&nbsp;</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+          <div class="form-action">
+            <button id="submit" disabled>Submit</button>
+          </div>
+        </form>
+        <aside>
+          <strong>Tip:</strong> comparing Web Vitals results for different <a href="https://support.google.com/analytics/answer/3123951">segments</a> can help you understand how these metrics correlate with your business goals.
+        </aside>
+
+      </div>
+    </div>
+    <section id="results" class="results" hidden>
+      <h2 class="results-heading">Results</h2>
+
+      <div class="metric-results">
+        <header class="metric-name">
+          <h3 class="metric-shortname">LCP</h3>
+          <a href="https://web.dev/lcp/" class="metric-fullname">
+            Largest Contentful Paint <em>(p75)</em>
+          </a>
+        </header>
+        <div id="summary-LCP" class="metric-device-results"></div>
+      </div>
+
+      <div class="histogram" id="histogram-LCP"></div>
+      <div class="timeline" id="timeline-LCP"></div>
+
+      <div class="metric-results">
+        <header class="metric-name">
+          <h3 class="metric-shortname">FID</h3>
+          <a href="https://web.dev/fid/" class="metric-fullname">
+            First Input Delay <em>(p75)</em>
+          </a>
+        </header>
+        <div id="summary-FID" class="metric-device-results"></div>
+      </div>
+
+      <div class="histogram" id="histogram-FID"></div>
+      <div class="timeline" id="timeline-FID"></div>
+
+      <div class="metric-results">
+        <header class="metric-name">
+          <h3 class="metric-shortname">CLS</h3>
+          <a href="https://web.dev/cls/" class="metric-fullname">
+            Cumulative Layout Shift <em>(p75)</em>
+          </a>
+        </header>
+        <div id="summary-CLS" class="metric-device-results"></div>
+      </div>
+
+      <div class="histogram" id="histogram-CLS"></div>
+      <div class="timeline" id="timeline-CLS"></div>
+
+      <header>
+        <h3 class="results-breakdown-heading">Results Breakdown</h3>
+        <div class="results-breakdown-meta">
+          By top countries and pages
+        </div>
+      </header>
+
+      <table id="visitors"></table>
+      <table id="countries"></table>
+      <table id="pages"></table>
+    </section>
+  </main>
+
+  <script type="module" src="main.js"></script>
+
+  <script defer src="https://apis.google.com/js/platform.js"></script>
+  <script defer src="https://code.highcharts.com/highcharts.js"></script>
+</body>
+</html>
