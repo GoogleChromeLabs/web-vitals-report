@@ -58,6 +58,7 @@ h1, h2, h3 {
 }
 .g-signin2 {
   min-height: 36px; /* Needed here because the component CSS is lazy-loaded. */
+  min-width: 120px; /* Needed here because the component CSS is lazy-loaded. */
 }
 a, a:hover, a:focus, a:active {
   color: hsl(218, 99%, 58%);
@@ -313,15 +314,25 @@ table td, table th {
 .result.ni {
   background-color: hsl(39, 100%, 50%, 0.8);
 }
+.prerender {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  visibility: hidden;
+}
+.ready .prerender {
+  opacity: 1;
+  visibility: visible;
+}
+
+.results {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.results.isFetchingData {
+  opacity: 0;
+}
 
 [hidden] {
   display: none;
 }
-main {
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-.ready main {
-  opacity: 1;
-}
-

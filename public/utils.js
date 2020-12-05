@@ -17,14 +17,6 @@
 const DAY = 1000 * 60 * 60 * 24;
 
 /**
- * Gets the passed element by ID.
- * @param {string} id
- */
-export function $(id) {
-  return document.getElementById(id);
-}
-
-/**
  * Accepts a date and returns a date string in YYYY-MM-DD format.
  * @param {Date} date
  * @return {string}
@@ -100,4 +92,13 @@ export class Deferred {
       this.reject = reject;
     });
   }
+}
+
+export function nextFrame() {
+  return new Promise(
+      (r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+
+export function timeout(ms) {
+  return new Promise((r) => setTimeout(r, ms));
 }

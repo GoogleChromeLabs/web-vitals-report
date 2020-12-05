@@ -136,7 +136,8 @@ function buildReportRequest({viewId, startDate, endDate, segmentA, segmentB}) {
       {name: 'ga:eventAction'}, // Metric name
       {name: 'ga:country'},
       {name: 'ga:pagePath'},
-      {name: 'ga:eventLabel'}, // Unique metric ID
+      // {name: 'ga:eventLabel'}, // Unique metric ID
+      {name: 'ga:dimension17'}, // Visit ID
     ],
     dimensionFilterClauses: {
       operator: 'AND',
@@ -155,6 +156,11 @@ function buildReportRequest({viewId, startDate, endDate, segmentA, segmentB}) {
           dimensionName: 'ga:browser',
           operator: 'EXACT',
           expressions: ['Chrome'],
+        },
+        {
+          dimensionName: 'ga:dimension16',
+          operator: 'EXACT',
+          expressions: ['67'],
         },
       ],
     },

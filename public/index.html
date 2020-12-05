@@ -18,7 +18,7 @@
 <head>
   <meta charset="utf-8">
   <title>Web Vitals Report</title>
-  <meta name="google-signin-client_id" content="668260105875-k5udm157fprqc7hv5blh9q8qmpmbotq5.apps.googleusercontent.com">
+  <meta name="google-signin-client_id" content="566344118954-s9j707p5q8a3vpivqrdl6vugk6rb5t16.apps.googleusercontent.com">
   <meta name="google-signin-scope" content="https://www.googleapis.com/auth/analytics.readonly">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -37,67 +37,10 @@
       <div class="intro">
         <h2>Create your Web Vitals report</h2>
         <p>This tool can be used to create a Web Vitals report for any site that uses the <a href="https://github.com/GoogleChrome/web-vitals">web-vitals</a> JavaScript library to <a href="https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics">send data to Google Analytics.</a> Use the fields below to pick your account and date rage, as well as any custom segment you want to use.</p>
-
-        <form id="config">
-          <div class="form-field">
-            <label>1. Select a Google Analytics account</label>
-            <select id="view-id" disabled>
-              <option>&nbsp;</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label>2. Choose a date range</label>
-            <select id="date-range" disabled>
-              <option value="7">Last 7 days</option>
-              <option value="14">Last 14 days</option>
-              <option value="28">Last 28 days</option>
-              <option value="-1">Custom range</option>
-            </select>
-            <div id="date-range-picker" class="col2 form-subfield" hidden>
-              <div class="form-field">
-                <label>Start date</label>
-                <input id="start-date" type="date" />
-              </div>
-              <div class="form-field">
-                <label>End date</label>
-                <input id="end-date" type="date" />
-              </div>
-            </div>
-          </div>
-          <div class="form-field">
-            <label>3. Compare segments</label>
-            <select id="segmentsRecommended">
-              <option value="-15,-14">Desktop Traffic vs Mobile Traffic</option>
-              <option value="-2,-3">New Users vs. Returning Users</option>
-              <option value="-19,-12">Bounced Sessions vs. Non-bounce Sessions</option>
-              <option value="-102,-103">Converters vs. Non-converters</option>
-              <option value="">Choose segments</option>
-            </select>
-
-            <div id="segment-picker-custom" class="col2 form-subfield" hidden>
-              <div class="form-field">
-                <label>First segment</label>
-                <select id="segmentA" disabled>
-                  <option>&nbsp;</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Second segment</label>
-                <select id="segmentB" disabled>
-                  <option>&nbsp;</option>
-                </select>
-              </div>
-            </div>
-
-          </div>
-          <div class="form-action">
-            <button id="submit" disabled>Submit</button>
-          </div>
-        </form>
-        <aside>
+        <div id="app" class="prerender"></div>
+        <aside class="prerender">
           <strong>Tip:</strong> comparing Web Vitals results for different <a href="https://support.google.com/analytics/answer/3123951">segments</a> can help you understand how these metrics correlate with your business goals.
         </aside>
-
       </div>
     </div>
     <section id="results" class="results" hidden>
@@ -156,7 +99,6 @@
   </main>
 
   <script type="module" src="main.js"></script>
-
   <script defer src="https://apis.google.com/js/platform.js"></script>
   <script defer src="https://code.highcharts.com/highcharts.js"></script>
 </body>

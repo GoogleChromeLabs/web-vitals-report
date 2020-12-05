@@ -14,23 +14,12 @@
  * limitations under the License.
  */
 
-// import {openDB} from 'https://unpkg.com/idb@5.0.4/build/esm/index.js?module';
-
-
-// let db;
 let state = {};
 const listenerMap = new Map();
 
-export async function initState(callback) {
-  // db = await openDB('web-vitals-state', 1, {
-  //   upgrade(db) {
-  //     db.createObjectStore('state');
-  //   },
-  // });
-  // const storedState = await db.get('state', 'state');
-
+export async function initState(initializer) {
   const storedState = JSON.parse(localStorage.getItem('state'));
-  Object.assign(state, callback(storedState));
+  Object.assign(state, initializer(storedState));
 
   document.addEventListener('visibilitychange', () => {
     localStorage.setItem('state', JSON.stringify(state));
@@ -47,28 +36,30 @@ export function addChangeListener(key, callback) {
   listeners.add(callback);
 }
 
-function runChangeListeners(key, newValue, oldValue) {
-  const listeners = listenerMap.get(key);
+function runChangeListeners(key, ...args) {
+  const listeners = listenerMap.get(key)
   if (listeners) {
     for (const listener of listeners) {
-      listener(newValue, oldValue);
+      listener(...args);
     }
   }
 }
 
 export function setState(updates) {
+  let stateDidChange = false;
   const oldState = state;
   state = Object.assign({}, state, updates);
 
   for (const [key, value] of Object.entries(updates)) {
     if (oldState[key] !== value) {
+      stateDidChange = true;
       console.log('change', key, value, oldState[key]);
       runChangeListeners(key, value, oldState[key]);
     }
   }
-
-  // Don't await, as we don't want this to block.
-  // db.put('state', state, 'state');
+  if (stateDidChange) {
+    runChangeListeners('*');
+  }
 }
 
 export function getState() {
