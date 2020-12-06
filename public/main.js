@@ -15,12 +15,14 @@
 */
 
 import {html, render} from 'https://unpkg.com/lit-html?module';
+import {addAlert} from './alerts.js';
 import {getAccountSummaries, getSegments} from './api.js';
 import {setAuthorizedUser} from './auth.js';
 import {renderCharts} from './charts.js';
 import {getWebVitalsData} from './data.js';
 import {initState, getState, setState, addChangeListener} from './state.js';
 import {dateOffset, nextFrame, timeout} from './utils.js';
+
 
 
 const windowLoaded = new Promise((resolve) => {
@@ -137,16 +139,23 @@ async function onSubmit(event) {
     onDateRangeChange(dateRange);
   }
 
-  setState({isFetchingData: true});
-  const [data] = await Promise.all([
-    getWebVitalsData(getState()),
-    // Make the request at least 1 second long. If the request completes too
-    // quickly it's not always obvious something happened.
-    timeout(1000),
-  ])
-  setState({isFetchingData: false});
-
-  renderCharts(data);
+  try {
+    setState({isFetchingData: true});
+    const [data] = await Promise.all([
+      getWebVitalsData(getState()),
+      // Make the request at least 1 second long. If the request completes too
+      // quickly it's not always obvious something happened.
+      timeout(1000),
+    ]);
+    renderCharts(data);
+  } catch (error) {
+    addAlert({
+      title: 'Oops, something went wrong!',
+      body: error.message,
+    });
+  } finally {
+    setState({isFetchingData: false});
+  }
 }
 
 function renderOpts(selected, options) {
@@ -229,7 +238,7 @@ const app = (state, data) => {
         ` : null}
       </div>
       <div class="form-action">
-        <button .disabled=${state.isFetchingData}>
+        <button class="Button" .disabled=${state.isFetchingData}>
           ${state.isFetchingData ? 'Loading...' : 'Submit'}
         </button>
       </di>

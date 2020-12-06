@@ -117,7 +117,7 @@ label > em {
   color: #777;
   font-weight: 400;
 }
-input, select, button {
+input, select, .Button {
   display: inline-block;
   font: inherit;
   height: 2.5em;
@@ -128,16 +128,16 @@ input, select, button {
 select[disabled] {
   color: transparent;
 }
-button {
+.Button {
   border: 0;
   background-color: hsl(218, 99%, 58%);
   border-radius: 4px;
   color: #fff;
   cursor: pointer;
 }
-button:hover,
-button:active,
-button:focus {
+.Button:hover,
+.Button:active,
+.Button:focus {
   /* background-color: hsl(217, 88%, 52%); */
   background-color: hsl(218, 99%, 50%);
 }
@@ -336,3 +336,101 @@ table td, table th {
 [hidden] {
   display: none;
 }
+
+:root {
+  --error-color: hsl(0, 60%, 50%);
+
+  --vgap: 1.5em;
+  --vgap-md: var(--vgap);
+  --vgap-lg: 1.75em;
+
+  --hgap: 1.25em;
+  --hgap-md: 1.5em;
+  --hgap-lg: 1.75em;
+
+  --quantum-easing: cubic-bezier(.4,0,.2,1);
+}
+
+
+.Icon {
+  display: inherit;
+  fill: currentColor;
+  height: 1em;
+  width: 1em;
+}
+
+.AlertContainer {
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+.Alert {
+  align-items: flex-start;
+  background: var(--error-color);
+  box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.4);
+  color: #fff;
+  display: flex;
+  left: 0;
+  padding: var(--vgap) var(--hgap);
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translate3d(0, -100%, 0);
+}
+
+.Alert--isTransitioning {
+  transition: transform .2s var(--quantum-easing);
+}
+
+.Alert--isActive {
+  transform: translate3d(0, 0%, 0);
+}
+
+.Alert-icon {
+  font-size: 3em;
+}
+
+.Alert-close {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: 2em;
+  opacity: .4;
+  padding: .25em;
+}
+.Alert-close:active,
+.Alert-close:focus,
+.Alert-close:hover {
+  opacity: 1;
+  outline: 0;
+}
+
+.Alert-body {
+  flex: 1 0 0%;
+  margin: 0 var(--hgap);
+}
+
+.Alert-title {
+  color: inherit;
+  font-size: 1.5em;
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.Alert-message {
+  font-weight: 300;
+  margin-top: .4em;
+  opacity: .7;
+}
+
+@media (--break-lg) {
+  .Alert {
+    padding: var(--vgap-lg) var(--hgap-lg);
+  }
+}
+

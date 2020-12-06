@@ -5,8 +5,8 @@ TODO
 P0
 
 - [x] Clear existing report when making a new report
-- [ ] Show any API errors that occur when making a request
-- [ ] Show an error is the selected view has no Web Vitals data
+- [x] Show any API errors that occur when making a request
+- [x] Show an error is the selected view has no Web Vitals data
 - [ ] Add an aside indicating no GA4 support
 
 P1
