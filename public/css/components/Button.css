@@ -1,0 +1,19 @@
+
+.Button {
+  border: 0;
+  background-color: hsl(218, 99%, 58%);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+}
+.Button:hover,
+.Button:active,
+.Button:focus {
+  /* background-color: hsl(217, 88%, 52%); */
+  background-color: hsl(218, 99%, 50%);
+}
+
+.Button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -1,0 +1,142 @@
+/*
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:root {
+  --vgap: 1.5em;
+  --vgap-md: var(--vgap);
+  --vgap-lg: 1.75em;
+
+  --hgap: 1.25em;
+  --hgap-md: 1.5em;
+  --hgap-lg: 1.75em;
+
+  --error-color: hsl(0, 60%, 50%);
+  --quantum-easing: cubic-bezier(.4,0,.2,1);
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  font: 1em/1.5 system-ui, sans-serif;
+  margin: 0;
+}
+h1 {
+  color: #eee;
+  font-weight: 400;
+  font-size: 1.5em;
+  line-height: 1;
+  margin: 0;
+}
+h2 {
+  font-size: 2.25em;
+  font-weight: 300;
+}
+h1, h2, h3 {
+  font-family: Google Sans, system-ui, sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font: 1em/1.5 system-ui, sans-serif;
+  margin: 0;
+}
+h1 {
+  color: #eee;
+  font-weight: 400;
+  font-size: 1.5em;
+  line-height: 1;
+  margin: 0;
+}
+h2 {
+  font-size: 2.25em;
+  font-weight: 300;
+}
+h1, h2, h3 {
+  font-family: Google Sans, system-ui, sans-serif;
+}
+a, a:hover, a:focus, a:active {
+  color: hsl(218, 99%, 58%);
+}
+
+aside {
+  font-size: 0.9em;
+  margin: 2em auto;
+  width: 36em;
+  font-style: italic;
+  color: #777;
+}
+aside > strong {
+  color: #000;
+}
+
+form {
+  max-width: 36em;
+  margin: 2em auto;
+  text-align: left;
+}
+label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9em;
+  margin-bottom: 0.4em;
+}
+label > em {
+  color: #777;
+  font-weight: 400;
+}
+input, select, .Button {
+  display: inline-block;
+  font: inherit;
+  height: 2.5em;
+  padding: 0.5em;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+select[disabled] {
+  color: transparent;
+}
+
+table {
+  --gap: 1.6rem;
+  --pad: 0.6rem;
+  table-layout: fixed;
+}
+table {
+  border-collapse: collapse;
+  margin: 4em 0;
+  max-width: 100%;
+  width: 100%;
+}
+table th {
+  background-color: hsla(0,0,0,.05);
+  vertical-align: bottom;
+}
+table th,
+table td {
+  padding: var(--pad);
+  text-align: left;
+  vertical-align: top;
+}
+table td, table th {
+  border-bottom: 1px solid hsla(0, 0%,0%,.1);
+  vertical-align: middle;
+}
+
+[hidden] {
+  display: none;
+}

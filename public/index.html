@@ -20,8 +20,10 @@
   <title>Web Vitals Report</title>
   <meta name="google-signin-client_id" content="566344118954-s9j707p5q8a3vpivqrdl6vugk6rb5t16.apps.googleusercontent.com">
   <meta name="google-signin-scope" content="https://www.googleapis.com/auth/analytics.readonly">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./css/critical.css">
+  <link rel="preload" href="./css/lazy.css" as="style" onload="this.rel='stylesheet'">
 </head>
+
 <body>
   <header class="topbar">
     <h1>Web Vitals Report</h1>
@@ -112,7 +114,7 @@
     </defs>
   </svg>
 
-  <script type="module" src="main.js"></script>
+  <script type="module" src="./js/main.js"></script>
   <script defer src="https://apis.google.com/js/platform.js"></script>
   <script defer src="https://code.highcharts.com/highcharts.js"></script>
 </body>
