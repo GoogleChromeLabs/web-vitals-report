@@ -18,92 +18,100 @@
 <head>
   <meta charset="utf-8">
   <title>Web Vitals Report</title>
-  <meta name="google-signin-client_id" content="566344118954-s9j707p5q8a3vpivqrdl6vugk6rb5t16.apps.googleusercontent.com">
-  <meta name="google-signin-scope" content="https://www.googleapis.com/auth/analytics.readonly">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./css/critical.css">
   <link rel="preload" href="./css/lazy.css" as="style" onload="this.rel='stylesheet'">
 </head>
 
 <body>
-  <header class="topbar">
-    <h1>Web Vitals Report</h1>
-    <div>
-      <a class="policies" href="https://policies.google.com/terms">Terms</a>
-      <a class="policies" href="https://policies.google.com/privacy">Privacy Policy</a>
-
-      <!-- The Sign-in button. This will run `self.onSignIn()` on success. -->
-      <div class="g-signin2" data-onsuccess="onSignIn"></div>
-    </div>
+  <header class="TopBar">
+    <h1 class="TopBar-title">Web Vitals Report</h1>
+    <nav class="TopBar-links needsAuth">
+      <a href="https://policies.google.com/terms">Terms</a>
+      <a href="https://policies.google.com/privacy">Privacy Policy</a>
+      <a id="signin-toggle" href="#">Sign In</a>
+    </nav>
   </header>
-  <main id="content">
-    <div class="container">
-      <div class="intro">
+  <main>
+    <div class="Container">
+      <section class="intro">
         <h2>Create your Web Vitals report</h2>
-        <p>This tool can be used to create a Web Vitals report for any site that uses the <a href="https://github.com/GoogleChrome/web-vitals">web-vitals</a> JavaScript library to <a href="https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics">send data to Google Analytics.</a> Use the fields below to pick your account and date rage, as well as any custom segment you want to use.</p>
-        <div id="app" class="prerender"></div>
-        <aside class="prerender">
-          <strong>Tip:</strong> comparing Web Vitals results for different <a href="https://support.google.com/analytics/answer/3123951">segments</a> can help you understand how these metrics correlate with your business goals.
-        </aside>
+        <p>This tool can be used to create a Web Vitals report for any site that uses the<br><a href="https://github.com/GoogleChrome/web-vitals">web-vitals</a> JavaScript library to <a href="https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics">send data to Google Analytics.</a></p>
+        <p>This report will display a histogram and timeline of each Web Vitals metric, and it will also let you compare results across different <a href="https://support.google.com/analytics/answer/3123951">segments</a> to help you better understand how these metrics correlate with your business goals.
+        </p>
+      </section>
+    </div>
+
+    <div class="Container">
+      <div class="AuthLayer">
+        <div id="app" class="AuthLayer-signedIn"></div>
+        <div class="AuthLayer-signedOut">
+          <div class="SignIn">
+            <div id="google-signin2"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <section id="results" class="results" hidden>
-      <h2 class="results-heading">Results</h2>
+    <div class="Container Container--alternate">
+      <section id="results" class="results" hidden>
+        <h2 class="results-heading">Results</h2>
 
-      <div class="metric-results">
-        <header class="metric-name">
-          <h3 class="metric-shortname">LCP</h3>
-          <a href="https://web.dev/lcp/" class="metric-fullname">
-            Largest Contentful Paint <em>(p75)</em>
-          </a>
-        </header>
-        <div id="summary-LCP" class="metric-device-results"></div>
-      </div>
-
-      <div class="histogram" id="histogram-LCP"></div>
-      <div class="timeline" id="timeline-LCP"></div>
-
-      <div class="metric-results">
-        <header class="metric-name">
-          <h3 class="metric-shortname">FID</h3>
-          <a href="https://web.dev/fid/" class="metric-fullname">
-            First Input Delay <em>(p75)</em>
-          </a>
-        </header>
-        <div id="summary-FID" class="metric-device-results"></div>
-      </div>
-
-      <div class="histogram" id="histogram-FID"></div>
-      <div class="timeline" id="timeline-FID"></div>
-
-      <div class="metric-results">
-        <header class="metric-name">
-          <h3 class="metric-shortname">CLS</h3>
-          <a href="https://web.dev/cls/" class="metric-fullname">
-            Cumulative Layout Shift <em>(p75)</em>
-          </a>
-        </header>
-        <div id="summary-CLS" class="metric-device-results"></div>
-      </div>
-
-      <div class="histogram" id="histogram-CLS"></div>
-      <div class="timeline" id="timeline-CLS"></div>
-
-      <header>
-        <h3 class="results-breakdown-heading">Results Breakdown</h3>
-        <div class="results-breakdown-meta">
-          By top countries and pages
+        <div class="metric-results">
+          <header class="metric-name">
+            <h3 class="metric-shortname">LCP</h3>
+            <a href="https://web.dev/lcp/" class="metric-fullname">
+              Largest Contentful Paint <em>(p75)</em>
+            </a>
+          </header>
+          <div id="summary-LCP" class="metric-device-results"></div>
         </div>
-      </header>
 
-      <table id="visitors"></table>
-      <table id="countries"></table>
-      <table id="pages"></table>
-    </section>
+        <div class="histogram" id="histogram-LCP"></div>
+        <div class="timeline" id="timeline-LCP"></div>
+
+        <div class="metric-results">
+          <header class="metric-name">
+            <h3 class="metric-shortname">FID</h3>
+            <a href="https://web.dev/fid/" class="metric-fullname">
+              First Input Delay <em>(p75)</em>
+            </a>
+          </header>
+          <div id="summary-FID" class="metric-device-results"></div>
+        </div>
+
+        <div class="histogram" id="histogram-FID"></div>
+        <div class="timeline" id="timeline-FID"></div>
+
+        <div class="metric-results">
+          <header class="metric-name">
+            <h3 class="metric-shortname">CLS</h3>
+            <a href="https://web.dev/cls/" class="metric-fullname">
+              Cumulative Layout Shift <em>(p75)</em>
+            </a>
+          </header>
+          <div id="summary-CLS" class="metric-device-results"></div>
+        </div>
+
+        <div class="histogram" id="histogram-CLS"></div>
+        <div class="timeline" id="timeline-CLS"></div>
+
+        <header>
+          <h3 class="results-breakdown-heading">Results Breakdown</h3>
+          <div class="results-breakdown-meta">
+            By top countries and pages
+          </div>
+        </header>
+
+        <table id="visitors"></table>
+        <table id="countries"></table>
+        <table id="pages"></table>
+      </section>
+    </div>
   </main>
 
   <div id="alerts"></div>
 
-  <svg display="none">
+  <svg hidden>
     <defs>
       <g id="icon-close">
         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -113,9 +121,19 @@
       </g>
     </defs>
   </svg>
-
+  <script type="module">
+    window.authorizeUser = new Promise((resolve, reject) => {
+      window.onGApiLoad = () => {
+        const config = {
+          client_id: '147139794996-8hj856t7l7as37adi34b1m6rr3idu4n8.apps.googleusercontent.com',
+          scopes: 'https://www.googleapis.com/auth/analytics.readonly',
+        }
+        gapi.auth2.init(config).then(resolve, reject);
+      };
+    });
+  </script>
   <script type="module" src="./js/main.js"></script>
-  <script defer src="https://apis.google.com/js/platform.js"></script>
+  <script defer src="https://apis.google.com/js/client:platform.js?onload=onGApiLoad"></script>
   <script defer src="https://code.highcharts.com/highcharts.js"></script>
 </body>
 </html>

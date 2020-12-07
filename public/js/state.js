@@ -37,7 +37,7 @@ export function addChangeListener(key, callback) {
 }
 
 function runChangeListeners(key, ...args) {
-  const listeners = listenerMap.get(key)
+  const listeners = listenerMap.get(key);
   if (listeners) {
     for (const listener of listeners) {
       listener(...args);

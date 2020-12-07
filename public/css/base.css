@@ -16,24 +16,30 @@
 
 :root {
   --vgap: 1.5em;
-  --vgap-md: var(--vgap);
-  --vgap-lg: 1.75em;
-
   --hgap: 1.25em;
-  --hgap-md: 1.5em;
-  --hgap-lg: 1.75em;
-
+  --accent-color: hsl(218, 88%, 61%);
+  --accent-color-active: hsl(218, 88%, 50%);
   --error-color: hsl(0, 60%, 50%);
-  --quantum-easing: cubic-bezier(.4,0,.2,1);
+  --material-easing: cubic-bezier(.4,0,.2,1);
+}
+
+@media (min-width: 40em) {
+  :root {
+    --vgap: 3em;
+    --hgap: 1.5em;
+  }
 }
 
 * {
   box-sizing: border-box;
 }
+
 body {
+  background: hsl(30,15%,95%);
   font: 1em/1.5 system-ui, sans-serif;
   margin: 0;
 }
+
 h1 {
   color: #eee;
   font-weight: 400;
@@ -48,40 +54,11 @@ h2 {
 h1, h2, h3 {
   font-family: Google Sans, system-ui, sans-serif;
 }
-* {
-  box-sizing: border-box;
+a {
+  color: var(--accent-color);
 }
-body {
-  font: 1em/1.5 system-ui, sans-serif;
-  margin: 0;
-}
-h1 {
-  color: #eee;
-  font-weight: 400;
-  font-size: 1.5em;
-  line-height: 1;
-  margin: 0;
-}
-h2 {
-  font-size: 2.25em;
-  font-weight: 300;
-}
-h1, h2, h3 {
-  font-family: Google Sans, system-ui, sans-serif;
-}
-a, a:hover, a:focus, a:active {
-  color: hsl(218, 99%, 58%);
-}
-
-aside {
-  font-size: 0.9em;
-  margin: 2em auto;
-  width: 36em;
-  font-style: italic;
-  color: #777;
-}
-aside > strong {
-  color: #000;
+a:hover, a:focus, a:active {
+  color: var(--accent-color-active);
 }
 
 form {

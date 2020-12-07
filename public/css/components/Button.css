@@ -1,7 +1,8 @@
 
 .Button {
   border: 0;
-  background-color: hsl(218, 99%, 58%);
+
+  background-color: hsl(218, 88%, 61%);
   border-radius: 4px;
   color: #fff;
   cursor: pointer;
@@ -10,7 +11,7 @@
 .Button:active,
 .Button:focus {
   /* background-color: hsl(217, 88%, 52%); */
-  background-color: hsl(218, 99%, 50%);
+  background-color: hsl(218, 88%, 50%);
 }
 
 .Button[disabled] {

@@ -4,7 +4,7 @@ import {nextFrame, timeout} from './utils.js';
 
 const ALERT_TRANSITION_TIME = 200;
 
-const state = {}
+const state = {};
 let alertShowing = false;
 
 /**
@@ -17,7 +17,7 @@ function renderIcon(id) {
   return svg`<svg class="Icon" viewBox="0 0 24 24">
     <use href=${xlinkHref}></use>
   </svg>`;
-};
+}
 
 function renderAlert() {
   const classes = ['Alert'];
@@ -38,7 +38,7 @@ function renderAlert() {
       </button>
     </div>
   `;
-};
+}
 
 function onContainerClick(event) {
   if (event.target === event.currentTarget) {
@@ -74,7 +74,7 @@ async function remove() {
 
   alertShowing = false;
   renderAlertContainer();
-};
+}
 
 export async function addAlert(data) {
   if (alertShowing) {
@@ -87,4 +87,4 @@ export async function addAlert(data) {
 
   await transition(true);
   document.getElementById('alerts').focus();
-};
+}

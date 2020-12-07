@@ -14,20 +14,49 @@
  * limitations under the License.
  */
 
+/* global gapi */
+
 // Utility methods for dealing with Google auth:
 // https://developers.google.com/identity/sign-in/web/reference
 
-let googleUser;
+export async function checkAuthStatus() {
+  // This is set on the window in `index.html`.
+  await window.authorizeUser;
 
-export function setAuthorizedUser(user) {
-  googleUser = user;
+  return getAuthInstance().isSignedIn.get();
 }
 
-export function getAccessToken() {
-  if (googleUser) {
-    const authResponse = googleUser.getAuthResponse(true);
+export function getAuthInstance() {
+  return gapi.auth2.getAuthInstance();
+}
 
-    // TODO(philipwalton): handle expired tokens.
-    return authResponse.access_token;
-  }
+// Can only be called if the user is signed in.
+export function getAccessToken() {
+  const googleUser = getAuthInstance().currentUser.get();
+  const authResponse = googleUser.getAuthResponse(true);
+  return authResponse.access_token;
+}
+
+export function onSignInChange(callback) {
+  getAuthInstance().isSignedIn.listen(callback);
+}
+
+export async function userIsSignedIn() {
+  const isSignedIn = await checkAuthStatus();
+
+  await new Promise((resolve, reject) => {
+    gapi.signin2.render('google-signin2', {
+      width: 240,
+      height: 50,
+      longtitle: true,
+      theme: 'dark',
+      onsuccess: resolve,
+      onfailure: reject,
+    });
+    // If the user is already signed in, render the button anyway but
+    // resolve immediately. (We render in case the user signs out.)
+    if (isSignedIn) {
+      resolve();
+    }
+  });
 }

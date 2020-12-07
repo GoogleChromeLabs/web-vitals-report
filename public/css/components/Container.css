@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-.container {
-  background-color: hsl(0,0%,96%);
-  padding: 2em;
+.Container {
+  padding: 0 var(--hgap);
 }
-.intro {
-  margin: 0 auto;
-  text-align: center;
-  width: 48em;
+
+.Container > * {
+  margin: var(--vgap) auto;
+  max-width: 48em;
 }
-.results {
-  width: 72em;
-  max-width: 100%;
-  margin: 1em auto;
-  padding: 1em 0;
-  text-align: center;
+
+.Container--alternate {
+  background-color: #fff;
 }

@@ -17,24 +17,15 @@
 import {html, render} from 'https://unpkg.com/lit-html?module';
 import {addAlert} from './alerts.js';
 import {getAccountSummaries, getSegments} from './api.js';
-import {setAuthorizedUser} from './auth.js';
+import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './auth.js';
 import {renderCharts} from './charts.js';
 import {getWebVitalsData} from './data.js';
 import {initState, getState, setState, addChangeListener} from './state.js';
 import {dateOffset, nextFrame, timeout} from './utils.js';
 
 
-
 const windowLoaded = new Promise((resolve) => {
   addEventListener('load', resolve);
-});
-
-const signedIn = new Promise((resolve) => {
-  // Expose the `onSignIn` callback to the `g-signin2` component.
-  self.onSignIn = (googleUser) => {
-    setAuthorizedUser(googleUser);
-    resolve(googleUser);
-  };
 });
 
 const data = {
@@ -50,11 +41,11 @@ const data = {
     ['-19,-12', 'Bounced Sessions vs. Non-bounce Sessions'],
     ['-102,-103', 'Converters vs. Non-converters'],
     ['', 'Choose segments'],
-  ]
+  ],
 };
 
 async function initViewOpts() {
-  const {viewId} = getState();
+  let {viewId} = getState();
   const viewOpts = {};
   const accountSummaries = await getAccountSummaries();
 
@@ -123,7 +114,6 @@ function onIsFetchingDataChange(newValue) {
   }
 }
 
-
 function onChange({target}) {
   setState({[target.id]: target.value});
   queueRender();
@@ -141,6 +131,10 @@ async function onSubmit(event) {
 
   try {
     setState({isFetchingData: true});
+
+    // Ensure the Highcharts library (loaded async) is ready.
+    await windowLoaded;
+
     const [data] = await Promise.all([
       getWebVitalsData(getState()),
       // Make the request at least 1 second long. If the request completes too
@@ -173,7 +167,7 @@ const app = (state, data) => {
     <form @submit=${onSubmit}>
       <div class="form-field">
         <label>1. Select a Google Analytics account</label>
-        <select id="viewId" @input=${onChange} .disabled=${!state.isSignedIn}>
+        <select id="viewId" @input=${onChange}>
           ${data.viewOpts && Object.keys(data.viewOpts).map((accountName) => {
             return html`<optgroup label=${accountName}>${
               data.viewOpts[accountName].map(({id, name}) => {
@@ -183,7 +177,7 @@ const app = (state, data) => {
                   </option>
                 `;
               })
-            }</optgroup>`
+            }</optgroup>`;
           })}
         </select>
       </div>
@@ -202,8 +196,8 @@ const app = (state, data) => {
               <label>End date</label>
               <input id="endDate" @input=${onChange} type="date" />
             </div>
-          </div>`
-        : null}
+          </div>` :
+        null}
       </div>
       <div class="form-field">
         <label>3. Compare segments</label>
@@ -256,41 +250,55 @@ function queueRender() {
     requestAnimationFrame(() => {
       renderApp();
       isRenderPending = false;
-    })
+    });
     isRenderPending = true;
   }
 }
 
+function handleSignInChange(isSignedIn) {
+  const signInToggle = document.getElementById('signin-toggle');
+  const toggle = isSignedIn ? 'Out' : 'In';
+  const classes = ['isSignedOut', 'isSignedIn'];
+  if (isSignedIn) {
+    classes.reverse();
+  }
+
+  signInToggle.textContent = `Sign ${toggle}`;
+  document.body.classList.add(classes[0]);
+  document.body.classList.remove(classes[1]);
+
+  signInToggle.onclick = () => {
+    getAuthInstance()[`sign${toggle}`]();
+  };
+}
+
 async function init() {
+  const isSignedIn = await checkAuthStatus();
+  handleSignInChange(isSignedIn);
+
   initState((storedState) => {
     const defaultState = {
       dateRange: 7,
       segmentsRecommended: '-15,-14',
     };
-    // Merge stored state with default state, but don't set signed-in state
-    // until status is confirmed by the `g-signin2` component.
-    return Object.assign({}, defaultState, storedState, {
-      isSignedIn: false,
+    const loadState = {
       isFetchingData: false,
-    });
+      isSignedIn,
+    };
+    return Object.assign(defaultState, storedState, loadState);
   });
 
   addChangeListener('dateRange', onDateRangeChange);
   addChangeListener('segmentsRecommended', onSegmentsRecommendedChange);
   addChangeListener('isFetchingData', onIsFetchingDataChange);
   addChangeListener('*', queueRender);
+  onSignInChange(handleSignInChange);
   renderApp();
 
   await nextFrame();
-  document.body.classList.add('ready');
+  document.body.classList.add('isReady');
 
-  await signedIn;
-  setState({isSignedIn: true});
-
-  // Wait until the user is signed and the window is loaded before
-  // initializing components that require API calls.
-  // This also allows HighCharts to load async.
-  await windowLoaded,
+  await userIsSignedIn();
   await Promise.all([
     initViewOpts(),
     initSegmentOpts(),

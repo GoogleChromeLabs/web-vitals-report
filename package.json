@@ -8,7 +8,7 @@
     "lint": "eslint \"public/**/*.js\"",
     "lint:fix": "eslint --fix \"public/**/*.js\"",
     "stage": "firebase deploy -P web-vitals-report-staging",
-    "start": "superstatic -p 3000"
+    "start": "superstatic -p 4040"
   },
   "author": {
     "name": "Philip Walton",

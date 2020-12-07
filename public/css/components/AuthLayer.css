@@ -1,0 +1,38 @@
+.AuthLayer {
+  position: relative;
+}
+
+.AuthLayer > * {
+  opacity: 0;
+  transition: opacity 0.3s var(--material-easing);
+}
+
+.AuthLayer-signedOut {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+/*
+TODO: This style causes layout shifts when the user signs in if they don't
+have overlay scroll bars enabled. Consider removing if it becomes a problem.
+*/
+.isSignedOut .AuthLayer {
+  overflow: hidden;
+  height: calc(50px + var(--vgap));
+}
+
+.isSignedIn .AuthLayer-signedIn,
+.isSignedOut .AuthLayer-signedOut {
+  opacity: 1;
+  z-index: 1;
+}
+
+.isSignedOut .AuthLayer-signedIn,
+.isSignedIn .AuthLayer-signedOut {
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: none;
+}

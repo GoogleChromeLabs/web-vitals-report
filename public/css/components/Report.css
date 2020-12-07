@@ -14,6 +14,25 @@
  * limitations under the License.
  */
 
+
+.results {
+  width: 72em;
+  max-width: 100%;
+  margin: 1em auto;
+  padding: 1em 0;
+  text-align: center;
+}
+
+.isSignedOut .results {
+  display: none;
+}
+
+.intro {
+  margin: 0 auto;
+  text-align: center;
+  max-width: 42em;
+}
+
 .col2 {
   display: grid;
   grid-gap: 1rem;
@@ -153,15 +172,6 @@
 }
 .result.ni {
   background-color: hsl(39, 100%, 50%, 0.8);
-}
-.prerender {
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-  visibility: hidden;
-}
-.ready .prerender {
-  opacity: 1;
-  visibility: visible;
 }
 
 .results {
