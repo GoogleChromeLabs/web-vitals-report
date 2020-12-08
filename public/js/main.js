@@ -257,9 +257,10 @@ function queueRender() {
 function handleSignInChange(isSignedIn) {
   const signInToggle = document.getElementById('signin-toggle');
   const toggle = isSignedIn ? 'Out' : 'In';
-  const classes = ['isSignedOut', 'isSignedIn'];
-  if (isSignedIn) {
+  const classes = ['isSignedIn', 'isSignedOut'];
+  if (!isSignedIn) {
     classes.reverse();
+    document.getElementById('report').hidden = true;
   }
 
   signInToggle.textContent = `Sign ${toggle}`;

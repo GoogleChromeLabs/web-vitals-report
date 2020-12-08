@@ -4,7 +4,7 @@ P0
 - [x] Show any API errors that occur when making a request
 - [x] Show an error is the selected view has no Web Vitals data
 - [x] Create a better login prompt if the user is not logged in
-- [ ] Clear all report data if the user signs out
+- [x] Hide report data after the user signs out
 - [ ] Add an aside indicating no GA4 support
 - [ ] Add web-vitals and other usage measurement analytics
 - [ ] Ensure styles render properly on mobile

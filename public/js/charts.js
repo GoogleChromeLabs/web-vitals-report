@@ -272,10 +272,10 @@ export function renderCharts(data) {
     });
 
     drawTimeline(name, metric.dates);
-
-    document.getElementById('report').hidden = false;
   }
 
   drawTable('countries', 'Country', [...Object.entries(data.countries)]);
   drawTable('pages', 'Page', [...Object.entries(data.pages)]);
+
+  document.getElementById('report').hidden = false;
 }
