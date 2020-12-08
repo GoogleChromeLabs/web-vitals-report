@@ -6,3 +6,6 @@ node_modules
 
 # Firebase files
 .firebase
+
+# Public directory
+public
