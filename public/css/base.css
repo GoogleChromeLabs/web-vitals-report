@@ -15,10 +15,9 @@
  */
 
 :root {
-  --vgap: 1.5em;
-  --vgap-lg: 2em;
-
-  --hgap: 1.25em;
+  --vgap: 1.5rem;
+  --vgap-lg: 2rem;
+  --hgap: 1.25rem;
 
   --accent-color: hsl(218, 88%, 61%);
   --accent-color-active: hsl(218, 88%, 50%);
@@ -26,11 +25,11 @@
   --material-easing: cubic-bezier(.4,0,.2,1);
 }
 
-@media (min-width: 40em) {
+@media (min-width: 48em) {
   :root {
-    --vgap: 2em;
-    --vgap-lg: 4em;
-    --hgap: 1.5em;
+    --vgap: 2rem;
+    --vgap-lg: 4rem;
+    --hgap: 1.5rem;
   }
 }
 
@@ -44,23 +43,27 @@ body {
   margin: 0;
 }
 
-h1 {
-  color: #eee;
-  font-weight: 400;
-  font-size: 1.5em;
-  line-height: 1;
-  margin: 0;
-}
 h2 {
-  font-size: 2.25em;
-  font-weight: 300;
+  font-size: 2em;
+  font-weight: 400;
 }
+
+@media (min-width: 48em) {
+  h2 {
+    font-size: 2.25em;
+    font-weight: 300;
+  }
+}
+
 h1, h2, h3 {
   font-family: Google Sans, system-ui, sans-serif;
+  line-height: 1.2;
 }
+
 a {
   color: var(--accent-color);
 }
+
 a:hover, a:focus, a:active {
   color: var(--accent-color-active);
 }

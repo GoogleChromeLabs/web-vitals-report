@@ -16,7 +16,7 @@
 
 .Form {
   border-top: 1px solid hsl(30, 15%, 88%);
-  padding-top: 1em;
+  padding-top: var(--vgap-lg);
   text-align: left;
 
   display: flex;
@@ -27,8 +27,14 @@
 
 .Form-field,
 .Form-action {
-  max-width: 36em;
   width: 100%;
+}
+
+@media (min-width: 48em) {
+  .Form-field,
+  .Form-action {
+    max-width: 36em;
+  }
 }
 
 .Form-field {
@@ -45,3 +51,4 @@
 .Form-action {
   margin: 2em 0 0;
 }
+

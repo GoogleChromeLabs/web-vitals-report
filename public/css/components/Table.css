@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+
 .Table {
-  border-collapse: collapse;
   margin: 4em 0;
-  max-width: 100%;
+  overflow-x: auto;
+}
+
+.Table > table {
+  border-collapse: collapse;
+  min-width: 42em;
   table-layout: fixed;
   width: 100%;
 }

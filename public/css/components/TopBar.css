@@ -17,21 +17,46 @@
 .TopBar {
   align-items: center;
   background: #333;
-  display: grid;
-  grid-gap: 1em;
-  grid-template-columns: 1fr auto;
-  padding: 1em;
+  padding: var(--hgap);
 }
+
+.TopBar-title {
+  color: #eee;
+  font-weight: 400;
+  font-size: 1.5em;
+  line-height: 1;
+  margin: 0;
+}
+
 .TopBar > nav {
-  align-items: center;
-  display: flex;
+  margin-top: 1em;
 }
 
 .TopBar > nav > a {
   color: #eee;
-  padding: 0.5em 0 0.5em 1em;
+  padding: 0;
+  margin-right: 1em;
+  white-space: nowrap;
 }
 
-.TopBar > nav > a:last-child {
-  min-width: 6em; /* To prevent layout shifts when toggling the text */
+@media (min-width: 48em) {
+  .TopBar {
+    display: grid;
+    grid-gap: 1em;
+    grid-template-columns: 1fr auto;
+  }
+  .TopBar > nav {
+    align-items: center;
+    display: flex;
+    margin-top: 0;
+  }
+  .TopBar > nav > a {
+    color: #eee;
+    padding: 0.5em 0;
+    margin-right: 1em;
+  }
+  .TopBar > nav > a:last-child {
+    min-width: 4.5em; /* To prevent layout shifts when toggling the text */
+    margin-right: 0;
+  }
 }
