@@ -78,12 +78,11 @@ label > em {
   color: #777;
   font-weight: 400;
 }
-input, select, .Button {
+input, select, button {
   display: inline-block;
   font: inherit;
   height: 2.5em;
   padding: 0.5em;
-  transition: all 0.2s ease-in-out;
   width: 100%;
 }
 select[disabled] {

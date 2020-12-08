@@ -6,8 +6,8 @@ P0
 - [x] Create a better login prompt if the user is not logged in
 - [x] Hide report data after the user signs out
 - [x] Ensure styles render properly on mobile
+- [x] Add a banner indicating no GA4 support
 - [ ] Add web-vitals and other usage measurement analytics
-- [ ] Add an aside indicating no GA4 support
 - [ ] Write README
 
 P1
