@@ -19,10 +19,17 @@ import globby from 'globby';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import cssnano from 'cssnano';
+import nunjucks from 'nunjucks';
 import postcss from 'postcss';
 import atImport from 'postcss-import';
 import {terser} from 'rollup-plugin-terser';
 
+
+nunjucks.configure({
+  noCache: true,
+  watch: false,
+  throwOnUndefined: true,
+});
 
 const compileCSS = async (srcPath) => {
   const css = await fs.readFile(srcPath, 'utf-8');
@@ -63,10 +70,20 @@ function buildHTML() {
       this.addWatchFile('./src/index.html');
     },
     async generateBundle() {
+      const [oauthData, template] = await Promise.all([
+        fs.readJSON('./oauth.config.json', 'utf-8'),
+        fs.readFile('./src/index.html', 'utf-8'),
+      ]);
+
+      const data = {
+        client_id: oauthData.client_ids[process.env.NODE_ENV || 'development'],
+        scope: oauthData.scope,
+      };
+
       this.emitFile({
         type: 'asset',
         fileName: 'index.html',
-        source: await fs.readFile('./src/index.html', 'utf-8'),
+        source: nunjucks.renderString(template, data),
       });
     },
   };
