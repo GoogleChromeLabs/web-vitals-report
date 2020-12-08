@@ -127,7 +127,7 @@
       window.onGApiLoad = () => {
         const config = {
           client_id: '147139794996-8hj856t7l7as37adi34b1m6rr3idu4n8.apps.googleusercontent.com',
-          scopes: 'https://www.googleapis.com/auth/analytics.readonly',
+          scope: 'https://www.googleapis.com/auth/analytics.readonly',
         }
         gapi.auth2.init(config).then(resolve, reject);
       };
