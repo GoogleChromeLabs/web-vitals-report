@@ -14,15 +14,15 @@
 * limitations under the License.
 */
 
-import {html, render} from 'https://unpkg.com/lit-html?module';
-import {addAlert} from './alerts.js';
-import {initAnalytics, measureReport} from './analytics.js';
-import {getAccountSummaries, getSegments} from './api.js';
-import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './auth.js';
-import {renderCharts} from './charts.js';
-import {getWebVitalsData} from './data.js';
-import {initState, getState, setState, addChangeListener} from './state.js';
-import {dateOffset, nextFrame, timeout} from './utils.js';
+import {html, render} from 'lit-html';
+import {addAlert} from './js/alerts.js';
+import {initAnalytics, measureReport} from './js/analytics.js';
+import {getAccountSummaries, getSegments} from './js/api.js';
+import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './js/auth.js';
+import {renderCharts} from './js/charts.js';
+import {getWebVitalsData} from './js/data.js';
+import {initState, getState, setState, addChangeListener} from './js/state.js';
+import {dateOffset, nextFrame, timeout} from './js/utils.js';
 
 
 const windowLoaded = new Promise((resolve) => {

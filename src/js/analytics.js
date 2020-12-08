@@ -16,7 +16,7 @@
 
 /* global gtag */
 
-import {getCLS, getFCP, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
+import {getCLS, getFCP, getFID, getLCP} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
 const config = {

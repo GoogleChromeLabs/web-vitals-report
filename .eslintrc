@@ -1,14 +1,15 @@
 {
   "env": {
     "browser": true,
-    "es6": true
+    "es6": true,
+    "node": true,
   },
   "parserOptions": {
     "ecmaVersion": 2020,
-    "sourceType": "module"
+    "sourceType": "module",
   },
   "extends": [
-    "eslint:recommended", "google"
+    "eslint:recommended", "google",
   ],
   "rules": {
     // Enough cases fail with this that we have to disable it.

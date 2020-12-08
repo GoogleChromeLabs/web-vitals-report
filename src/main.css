@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-@import './base.css';
+@import './css/base.css';
 
-@import './components/AlertContainer.css';
-@import './components/Alert.css';
-@import './components/AuthLayer.css';
-@import './components/Banner.css';
-@import './components/Button.css';
-@import './components/Container.css';
-@import './components/Form.css';
-@import './components/Icon.css';
-@import './components/Intro.css';
-@import './components/Report.css';
-@import './components/Score.css';
-@import './components/SignIn.css';
-@import './components/Table.css';
-@import './components/TopBar.css';
+@import './css/components/AlertContainer.css';
+@import './css/components/Alert.css';
+@import './css/components/AuthLayer.css';
+@import './css/components/Banner.css';
+@import './css/components/Button.css';
+@import './css/components/Container.css';
+@import './css/components/Form.css';
+@import './css/components/Icon.css';
+@import './css/components/Intro.css';
+@import './css/components/Report.css';
+@import './css/components/Score.css';
+@import './css/components/SignIn.css';
+@import './css/components/Table.css';
+@import './css/components/TopBar.css';

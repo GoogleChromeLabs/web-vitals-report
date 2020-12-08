@@ -8,6 +8,7 @@ P0
 - [x] Ensure styles render properly on mobile
 - [x] Add a banner indicating no GA4 support
 - [x] Add web-vitals and other usage measurement analytics
+- [x] Productionize build
 - [ ] Write README
 - [ ] Add error message explanation for > 1M rows
 

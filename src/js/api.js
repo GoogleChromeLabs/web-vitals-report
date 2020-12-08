@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {openDB} from 'https://unpkg.com/idb@5.0.4/build/esm/index.js?module';
+import {openDB} from 'idb';
 import {getAccessToken} from './auth.js';
 import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
 
