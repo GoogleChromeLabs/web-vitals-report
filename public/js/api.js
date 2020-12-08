@@ -16,7 +16,7 @@
 
 import {openDB} from 'https://unpkg.com/idb@5.0.4/build/esm/index.js?module';
 import {getAccessToken} from './auth.js';
-import {Deferred, getDatesInRange, mergeSortedArrays, toISODate} from './utils.js';
+import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
 
 
 const MANAGEMENT_API_URL =
@@ -261,7 +261,7 @@ export async function getReportFromAPI(reportRequest, onProgress) {
 const dbPromise = openDB('web-vitals-cache', 1, {
   upgrade(db) {
     db.createObjectStore('data', {
-      keyPath: ['viewId', 'segmentId', 'date'],
+      keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
     });
   },
 });
@@ -270,11 +270,11 @@ function getDB() {
   return dbPromise;
 }
 
-async function getCachedData(viewId, segmentId, startDate, endDate) {
+async function getCachedData(viewId, segmentId, optsHash, startDate, endDate) {
   const db = await getDB();
   const range = IDBKeyRange.bound(
-    [viewId, segmentId, startDate],
-    [viewId, segmentId, endDate],
+    [viewId, segmentId, optsHash, startDate],
+    [viewId, segmentId, optsHash, endDate],
   );
   const results = await db.getAll('data', range);
 
@@ -285,7 +285,7 @@ async function getCachedData(viewId, segmentId, startDate, endDate) {
   return cachedData;
 }
 
-async function updateCachedData(reportRequest, rows) {
+async function updateCachedData(viewId, optsHash, rows) {
   const dateData = new Map();
   for (const row of rows) {
     const [segmentId, date] = row.dimensions;
@@ -309,8 +309,9 @@ async function updateCachedData(reportRequest, rows) {
   for (const [date, segmentData] of dateData) {
     for (const [segmentId, rows] of segmentData) {
       await db.put('data', {
-        viewId: reportRequest.viewId,
+        viewId,
         segmentId,
+        optsHash,
         date: toISODate(date),
         json: JSON.stringify(rows),
       });
@@ -348,13 +349,15 @@ function getMissingRanges(reportRequest, cachedData) {
 }
 
 async function getReportFromCacheAndAPI(reportRequest) {
-  const {viewId, segments} = reportRequest;
+  const {viewId, segments, dimensions, dimensionFilterClauses} = reportRequest;
   const {startDate, endDate} = reportRequest.dateRanges[0];
+  const optsHash = await hashObj({dimensions, dimensionFilterClauses});
 
   // Start by populating the report with all available cached data
   // for the segments and dates specified.
   const cachedData = await Promise.all(segments.map(({segmentId}) => {
-    return getCachedData(viewId, segmentId.slice(6), startDate, endDate);
+    return getCachedData(
+        viewId, segmentId.slice(6), optsHash, startDate, endDate);
   }));
 
   let cachedReport = [];
@@ -371,7 +374,7 @@ async function getReportFromCacheAndAPI(reportRequest) {
     await getReportByDatesFromAPI(reportRequest, missingRangesFromCache);
 
   // Don't await.
-  updateCachedData(reportRequest, networkReport);
+  updateCachedData(viewId, optsHash, networkReport);
 
   return mergeReports(cachedReport, networkReport);
 }
@@ -403,5 +406,3 @@ function mergeReports(r1, r2) {
 
   return mergeSortedArrays(r1, r2, (r) => Number(r.metrics[0].values[0]));
 }
-
-

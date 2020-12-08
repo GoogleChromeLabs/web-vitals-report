@@ -17,8 +17,21 @@
 import {getReport, getSegmentNameById} from './api.js';
 
 
-export async function getWebVitalsData(opts) {
-  const reportRequest = buildReportRequest(opts);
+export function getDefaultOpts() {
+  return {
+    active: false,
+    metricNameDim: 'ga:eventAction',
+    metricIdDim: 'ga:eventLabel',
+    category: 'Web Vitals',
+    lcpName: 'LCP',
+    fidName: 'FID',
+    clsName: 'CLS',
+    filters: '',
+  };
+}
+
+export async function getWebVitalsData(state) {
+  const reportRequest = buildReportRequest(state);
   const report = await getReport(reportRequest);
 
   if (report.length === 0) {
@@ -119,7 +132,62 @@ export async function getWebVitalsData(opts) {
   return data;
 }
 
-function buildReportRequest({viewId, startDate, endDate, segmentA, segmentB}) {
+function parseFilters(filtersExpression) {
+  if (filtersExpression.match(/[^\\],/)) {
+    throw new Error('OR based filter expressions (using a comma) are not ' +
+        'supported. Only AND based filter expressions (using a semicolon) ' +
+        'are allowed.');
+  }
+
+  // TODO: add support for escaping semicolons.
+  return filtersExpression.split(';').map((expression) => {
+    const match = /(ga:\w+)([!=][=@~])(.+)$/.exec(expression);
+    if (!match) {
+      throw new Error(`Invalid filter expression '${expression}'`);
+    }
+
+    const filter = {
+      dimensionName: match[1],
+      expressions: [match[3]],
+    };
+
+    if (match[2].startsWith('!')) {
+      filter.not = true;
+    }
+
+    if (match[2].endsWith('=')) {
+      filter.operator = 'EXACT';
+    } else if (match[2].endsWith('@')) {
+      filter.operator = 'PARTIAL';
+    } else if (match[3].endsWith('~')) {
+      filter.operator = 'REGEXP';
+    }
+    return filter;
+  });
+}
+
+function buildReportRequest(state) {
+  const {viewId, startDate, endDate, segmentA, segmentB} = state;
+  const stateOpts = state[`opts:${viewId}`];
+  const opts = stateOpts && stateOpts.active ? stateOpts : getDefaultOpts();
+
+  let filters = [
+    {
+      dimensionName: 'ga:eventCategory',
+      operator: 'EXACT',
+      expressions: ['Web Vitals'],
+    },
+    {
+      dimensionName: opts.metricNameDim,
+      operator: 'IN_LIST',
+      expressions: [opts.lcpName, opts.fidName, opts.clsName],
+    },
+  ];
+
+  if (opts.filters) {
+    filters = filters.concat(parseFilters(opts.filters));
+  }
+
   return {
     viewId,
     pageSize: 100000,
@@ -133,36 +201,14 @@ function buildReportRequest({viewId, startDate, endDate, segmentA, segmentB}) {
     dimensions: [
       {name: 'ga:segment'},
       {name: 'ga:date'},
-      {name: 'ga:eventAction'}, // Metric name
+      {name: opts.metricNameDim}, // Metric name (ga:eventAction)
       {name: 'ga:country'},
       {name: 'ga:pagePath'},
-      // {name: 'ga:eventLabel'}, // Unique metric ID
-      {name: 'ga:dimension17'}, // Visit ID
+      {name: opts.metricIdDim}, // Unique metric ID (ga:eventLabel)
     ],
     dimensionFilterClauses: {
       operator: 'AND',
-      filters: [
-      {
-          dimensionName: 'ga:eventCategory',
-          operator: 'EXACT',
-          expressions: ['Web Vitals'],
-        },
-        {
-          dimensionName: 'ga:eventAction',
-          operator: 'IN_LIST',
-          expressions: ['LCP', 'CLS', 'FID'],
-        },
-        {
-          dimensionName: 'ga:browser',
-          operator: 'EXACT',
-          expressions: ['Chrome'],
-        },
-        {
-          dimensionName: 'ga:dimension16',
-          operator: 'EXACT',
-          expressions: ['67'],
-        },
-      ],
+      filters,
     },
     orderBys: [
       {
@@ -176,4 +222,3 @@ function buildReportRequest({viewId, startDate, endDate, segmentA, segmentB}) {
     ],
   };
 }
-

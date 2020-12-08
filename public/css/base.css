@@ -68,27 +68,6 @@ a:hover, a:focus, a:active {
   color: var(--accent-color-active);
 }
 
-label {
-  display: block;
-  font-weight: 700;
-  font-size: 0.9em;
-  margin-bottom: 0.4em;
-}
-label > em {
-  color: #777;
-  font-weight: 400;
-}
-input, select, button {
-  display: inline-block;
-  font: inherit;
-  height: 2.5em;
-  padding: 0.5em;
-  width: 100%;
-}
-select[disabled] {
-  color: transparent;
-}
-
 [hidden] {
   display: none;
 }

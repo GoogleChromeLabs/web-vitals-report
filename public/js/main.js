@@ -16,6 +16,7 @@
 
 import {html, render} from 'https://unpkg.com/lit-html?module';
 import {addAlert} from './alerts.js';
+import {initAnalytics, measureReport} from './analytics.js';
 import {getAccountSummaries, getSegments} from './api.js';
 import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './auth.js';
 import {renderCharts} from './charts.js';
@@ -43,6 +44,20 @@ const data = {
     ['', 'Choose segments'],
   ],
 };
+
+function validateOpts(opts = {}) {
+  return {
+    active: false,
+    metricNameDim: 'ga:eventAction',
+    metricIdDim: 'ga:eventLabel',
+    category: 'Web Vitals',
+    lcpName: 'LCP',
+    fidName: 'FID',
+    clsName: 'CLS',
+    filters: '',
+    ...opts,
+  };
+}
 
 async function initViewOpts() {
   let {viewId} = getState();
@@ -114,7 +129,17 @@ function onIsFetchingDataChange(newValue) {
 }
 
 function onChange({target}) {
-  setState({[target.id]: target.value});
+  if (target.id.startsWith('opts:')) {
+    const field = target.id.slice(5); // After the colon.
+    const state = getState();
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const key = `opts:${state.viewId}`;
+    const opts = validateOpts(state[key]);
+    opts[field] = value;
+    setState({[key]: opts});
+  } else {
+    setState({[target.id]: target.value});
+  }
   queueRender();
 }
 
@@ -146,32 +171,36 @@ async function onSubmit(event) {
       title: 'Oops, something went wrong!',
       body: error.message,
     });
+    console.error(error);
   } finally {
     setState({isFetchingData: false});
+
+    measureReport(getState());
   }
 }
 
 function renderOpts(selected, options) {
   return options.map(([value, name]) => html`
-    <option ?selected=${selected === value} value=${value}>${name}</option>
+    <option ?selected=${selected === value} .value=${value}>${name}</option>
   `);
 }
 
 const app = (state, data) => {
+  const opts = validateOpts(state[`opts:${state.viewId}`]);
   const showCustomDateRangeSelect = state.dateRange < 0;
   const showCustomSegmentsSelect =
       !state.segmentsRecommended && data.segmentOpts;
 
   return html`
-    <form class="Form" @submit=${onSubmit}>
+    <form class="Form" @input=${onChange} @submit=${onSubmit}>
       <div class="Form-field">
         <label>1. Select a Google Analytics account</label>
-        <select id="viewId" @input=${onChange}>
+        <select id="viewId">
           ${data.viewOpts && Object.keys(data.viewOpts).map((accountName) => {
             return html`<optgroup label=${accountName}>${
               data.viewOpts[accountName].map(({id, name}) => {
                 return html`
-                  <option ?selected=${state.viewId === id} value=${id}>
+                  <option ?selected=${state.viewId === id} .value=${id}>
                     ${name}
                   </option>
                 `;
@@ -182,32 +211,32 @@ const app = (state, data) => {
       </div>
       <div class="Form-field">
         <label>2. Choose a date range</label>
-        <select id="dateRange" @input=${onChange}>
+        <select id="dateRange">
           ${renderOpts(state.dateRange, data.dateRangeOpts)}
         </select>
         ${showCustomDateRangeSelect ? html`
           <div class="Form-subfield">
             <div class="Form-field">
               <label>Start date</label>
-              <input id="startDate" @input=${onChange} type="date" />
+              <input id="startDate" type="date" />
             </div>
             <div class="Form-field">
               <label>End date</label>
-              <input id="endDate" @input=${onChange} type="date" />
+              <input id="endDate" type="date" />
             </div>
           </div>` :
         null}
       </div>
       <div class="Form-field">
         <label>3. Compare segments</label>
-        <select id="segmentsRecommended" @input=${onChange}>
+        <select id="segmentsRecommended">
           ${renderOpts(state.segmentsRecommended, data.segmentsRecommendedOpts)}
         </select>
         ${showCustomSegmentsSelect ? html`
           <div class="Form-subfield">
             <div class="Form-field">
               <label>First segment</label>
-              <select id="segmentA" @input=${onChange}>
+              <select id="segmentA">
                 <optgroup label="Built-in Segments">
                   ${renderOpts(state.segmentA, data.segmentOpts.BUILT_IN)}
                 </optgroup>
@@ -218,7 +247,7 @@ const app = (state, data) => {
             </div>
             <div class="Form-field">
               <label>Second segment</label>
-              <select id="segmentB" @input=${onChange}>
+              <select id="segmentB">
                 <optgroup label="Built-in Segments">
                   ${renderOpts(state.segmentB, data.segmentOpts.BUILT_IN)}
                 </optgroup>
@@ -230,6 +259,50 @@ const app = (state, data) => {
           </div>
         ` : null}
       </div>
+
+      <div class="Form-field">
+        <label class="Form-advancedAction">
+          <input type="checkbox" id="opts:active" .checked=${opts.active}>
+          Use advanced options (configurable per account)
+        </label>
+        ${opts.active ? html`
+          <div class="Form-advancedFields">
+            <div class="Form-field">
+              <label>Metric ID dimension</label>
+              <input id="opts:metricIdDim" type="text"
+                     .value=${opts.metricIdDim}>
+            </div>
+            <div class="Form-field">
+              <label>Metric name dimension</label>
+              <input id="opts:metricNameDim" type="text"
+                     .value=${opts.metricNameDim}>
+            </div>
+            <div class="Form-3col">
+              <div class="Form-field">
+                <label>LCP name</label>
+                <input id="opts:lcpName" type="text"
+                       .value=${opts.lcpName}>
+              </div>
+              <div class="Form-field">
+                <label>FID name</label>
+                <input id="opts:fidName" type="text"
+                       .value=${opts.fidName}>
+              </div>
+              <div class="Form-field">
+                <label>CLS name</label>
+                <input id="opts:clsName" type="text"
+                       .value=${opts.clsName}>
+              </div>
+            </div>
+            <div class="Form-field">
+              <label>Additional filters</label>
+              <input id="opts:filters" type="text"
+                     .value=${opts.filters}>
+            </div>
+          </div>`
+        : null}
+      </div>
+
       <div class="Form-action">
         <button class="Button" .disabled=${state.isFetchingData}>
           ${state.isFetchingData ? 'Loading...' : 'Submit'}
@@ -273,10 +346,12 @@ function handleSignInChange(isSignedIn) {
 }
 
 async function init() {
+  initAnalytics();
+
   const isSignedIn = await checkAuthStatus();
   handleSignInChange(isSignedIn);
 
-  initState((storedState) => {
+  const state = initState((storedState) => {
     const defaultState = {
       dateRange: 7,
       segmentsRecommended: '-15,-14',
@@ -292,7 +367,11 @@ async function init() {
   addChangeListener('segmentsRecommended', onSegmentsRecommendedChange);
   addChangeListener('isFetchingData', onIsFetchingDataChange);
   addChangeListener('*', queueRender);
+
   onSignInChange(handleSignInChange);
+  onDateRangeChange(state.dateRange);
+  onSegmentsRecommendedChange(state.segmentsRecommended);
+
   renderApp();
 
   await nextFrame();

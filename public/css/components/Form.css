@@ -25,6 +25,33 @@
   flex-direction: column;
 }
 
+.Form label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9em;
+  margin-bottom: 0.4em;
+}
+
+.Form label > em {
+  color: #777;
+  font-weight: 400;
+}
+
+.Form input[type="date"],
+.Form input[type="text"],
+.Form select,
+.Form button {
+  display: inline-block;
+  font: inherit;
+  height: 2.5em;
+  padding: 0.5em;
+  width: 100%;
+}
+
+.Form select[disabled] {
+  color: transparent;
+}
+
 .Form-field,
 .Form-action {
   width: 100%;
@@ -49,6 +76,33 @@
 }
 
 .Form-action {
-  margin: 2em 0 0;
+  margin: 1em 0 0;
 }
 
+.Form-3col {
+  display: flex;
+  grid-gap: 1em;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.Form--action {
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+label.Form-advancedAction {
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+  margin-bottom: 1em;
+}
+
+.Form-advancedAction > input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+.Form-advancedFields {
+  margin: 1em 0 0 5px;
+  border-left: 1px solid #ccc;
+  padding-left: 1em;
+}

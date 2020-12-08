@@ -102,3 +102,11 @@ export function nextFrame() {
 export function timeout(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
+
+export async function hashObj(obj) {
+  const text = JSON.stringify(obj);
+  const msgUint8 = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}

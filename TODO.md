@@ -7,12 +7,14 @@ P0
 - [x] Hide report data after the user signs out
 - [x] Ensure styles render properly on mobile
 - [x] Add a banner indicating no GA4 support
-- [ ] Add web-vitals and other usage measurement analytics
+- [x] Add web-vitals and other usage measurement analytics
 - [ ] Write README
+- [ ] Add error message explanation for > 1M rows
 
 P1
 
-- [ ] Add advanced customization options (filters, remap dimensions, etc.)
+- [x] Add advanced customization options (filters, remap dimensions, etc.)
+- [ ] Add links to the code on GitHub
 
 P2
 

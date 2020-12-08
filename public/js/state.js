@@ -17,15 +17,21 @@
 let state = {};
 const listenerMap = new Map();
 
-export async function initState(initializer) {
-  const storedState = JSON.parse(localStorage.getItem('state'));
+export function initState(initializer) {
+  let storedState = {};
+  try {
+    storedState = JSON.parse(localStorage.getItem('state'));
+  } catch (error) {
+    // Do nothing.
+  }
   Object.assign(state, initializer(storedState));
 
   document.addEventListener('visibilitychange', () => {
     localStorage.setItem('state', JSON.stringify(state));
   });
-}
 
+  return state;
+}
 
 export function addChangeListener(key, callback) {
   let listeners = listenerMap.get(key);
