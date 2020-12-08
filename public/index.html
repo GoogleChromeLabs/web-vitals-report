@@ -19,8 +19,7 @@
   <meta charset="utf-8">
   <title>Web Vitals Report</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./css/critical.css">
-  <link rel="preload" href="./css/lazy.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="stylesheet" href="./css/main.css">
 </head>
 
 <body>
@@ -34,7 +33,7 @@
   </header>
   <main>
     <div class="Container">
-      <section class="intro">
+      <section class="Intro">
         <h2>Create your Web Vitals report</h2>
         <p>This tool can be used to create a Web Vitals report for any site that uses the<br><a href="https://github.com/GoogleChrome/web-vitals">web-vitals</a> JavaScript library to <a href="https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics">send data to Google Analytics.</a></p>
         <p>This report will display a histogram and timeline of each Web Vitals metric, and it will also let you compare results across different <a href="https://support.google.com/analytics/answer/3123951">segments</a> to help you better understand how these metrics correlate with your business goals.
@@ -52,59 +51,54 @@
         </div>
       </div>
     </div>
-    <div class="Container Container--alternate">
-      <section id="results" class="results" hidden>
-        <h2 class="results-heading">Results</h2>
 
-        <div class="metric-results">
-          <header class="metric-name">
-            <h3 class="metric-shortname">LCP</h3>
-            <a href="https://web.dev/lcp/" class="metric-fullname">
+    <div class="Container Container--alternate">
+      <section id="report" class="Report" hidden>
+        <h2 class="Report-heading">Report</h2>
+
+        <div class="Report-metric">
+          <header class="Report-metricName">
+            <h3 class="Report-metricShortname">LCP</h3>
+            <a href="https://web.dev/lcp/" class="Report-metricFullname">
               Largest Contentful Paint <em>(p75)</em>
             </a>
           </header>
-          <div id="summary-LCP" class="metric-device-results"></div>
+          <div id="summary-LCP" class="Report-metricSummary"></div>
+          <div id="histogram-LCP" class="Report-metricHistogram"></div>
+          <div id="timeline-LCP" class="Report-metricTimeline"></div>
         </div>
 
-        <div class="histogram" id="histogram-LCP"></div>
-        <div class="timeline" id="timeline-LCP"></div>
-
-        <div class="metric-results">
-          <header class="metric-name">
-            <h3 class="metric-shortname">FID</h3>
-            <a href="https://web.dev/fid/" class="metric-fullname">
+        <div class="Report-metric">
+          <header class="Report-metricName">
+            <h3 class="Report-metricShortname">FID</h3>
+            <a href="https://web.dev/fid/" class="Report-metricFullname">
               First Input Delay <em>(p75)</em>
             </a>
           </header>
-          <div id="summary-FID" class="metric-device-results"></div>
+          <div id="summary-FID" class="Report-metricSummary"></div>
+          <div id="histogram-FID" class="Report-metricHistogram"></div>
+          <div id="timeline-FID" class="Report-metricTimeline"></div>
         </div>
 
-        <div class="histogram" id="histogram-FID"></div>
-        <div class="timeline" id="timeline-FID"></div>
-
-        <div class="metric-results">
-          <header class="metric-name">
-            <h3 class="metric-shortname">CLS</h3>
-            <a href="https://web.dev/cls/" class="metric-fullname">
+        <div class="Report-metric">
+          <header class="Report-metricName">
+            <h3 class="Report-metricShortname">CLS</h3>
+            <a href="https://web.dev/cls/" class="Report-metricFullname">
               Cumulative Layout Shift <em>(p75)</em>
             </a>
           </header>
-          <div id="summary-CLS" class="metric-device-results"></div>
+          <div id="summary-CLS" class="Report-metricSummary"></div>
+          <div id="histogram-CLS" class="Report-metricHistogram"></div>
+          <div id="timeline-CLS" class="Report-metricTimeline"></div>
         </div>
 
-        <div class="histogram" id="histogram-CLS"></div>
-        <div class="timeline" id="timeline-CLS"></div>
-
         <header>
-          <h3 class="results-breakdown-heading">Results Breakdown</h3>
-          <div class="results-breakdown-meta">
-            By top countries and pages
-          </div>
+          <h3 class="Report-breakdownHeading">Results Breakdown</h3>
+          <div class="Report-breakdownMeta">By top countries and pages</div>
         </header>
 
-        <table id="visitors"></table>
-        <table id="countries"></table>
-        <table id="pages"></table>
+        <table id="countries" class="Table"></table>
+        <table id="pages" class="Table"></table>
       </section>
     </div>
   </main>

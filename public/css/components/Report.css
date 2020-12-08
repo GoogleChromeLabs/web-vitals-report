@@ -14,32 +14,26 @@
  * limitations under the License.
  */
 
-
-.results {
+.Report {
   width: 72em;
   max-width: 100%;
-  margin: 1em auto;
+  margin: 0 auto;
   padding: 1em 0;
+  opacity: 1;
+  overflow: hidden;
   text-align: center;
+  transition: opacity 0.2s ease-in-out;
 }
 
-.isSignedOut .results {
+.isFetchingData .Report {
+  opacity: 0;
+}
+
+.isSignedOut .Report {
   display: none;
 }
 
-.intro {
-  margin: 0 auto;
-  text-align: center;
-  max-width: 42em;
-}
-
-.col2 {
-  display: grid;
-  grid-gap: 1rem;
-  grid-template-columns: 1fr 1fr;
-}
-
-.results-heading {
+.Report-heading {
   color: #777;
   font-size: 0.9em;
   font-weight: 500;
@@ -48,137 +42,67 @@
   text-transform: uppercase;
 }
 
-.metric-results {
-  border-top: 1px solid #eee;
-  margin: 3em 0;
-  padding-top: 3em;
-}
-
-.metric-name {
-  margin: 0 0 1.5em;
-}
-
-.metric-shortname {
-  font-size: 4em;
-  font-weight: 500;
-  letter-spacing: 2px;
-  line-height: 1.2;
-  margin: 0;
-}
-.metric-fullname {
-  color: #777;
-  text-decoration: none;
-}
-.metric-fullname:hover,
-.metric-fullname:focus,
-.metric-fullname:active {
-  text-decoration: underline;
-}
-
-.metric-fullname > em {
-  color: #777;
-  text-decoration: none!important;
-  font-style: italics;
-}
-
-.metric-device-results {
-  font-size: 1.1em;
-}
-.metric-device-result {
-  background: transparent 0 calc(50% + 0em) no-repeat;
-  background-size: 1.3em;
-  display: inline-block;
-  margin: 0.5em;
-  /* padding-left: 2em; */
-}
-
-.metric-device-result.all {
-  /* background-image: url(icons/devices.svg); */
-}
-.metric-device-result.desktop {
-  /* background-image: url(icons/desktop.svg); */
-}
-.metric-device-result.mobile {
-  /* background-image: url(icons/mobile.svg); */
-  padding-left: 1.6em;
-}
-
-.metric-device-value {
-  background-color: hsl(0, 0%, 50%);
-  color: #fff;
-  padding: 0.25em 0.5em;
-  border-radius: 4px;
-  margin: 0 0.5em;
-}
-.metric-device-value.good {
-  background-color: hsl(150, 92%, 42%);
-}
-.metric-device-value.poor {
-  background-color: hsl(4, 100%, 63%);
-}
-.metric-device-value.ni {
-  background-color: hsl(39, 100%, 50%);
-}
-
-.histogram, .timeline {
-  margin: 4em 0;
-}
-.histogram {
-  height: 500px;
-}
-.timeline {
-  height: 300px;
-}
-
-.results-breakdown-heading {
+.Report-breakdownHeading {
   font-size: 2.5em;
   margin: 0;
   padding-top: 3rem;
   border-top: 1px solid #eee;
   font-weight: 500;
 }
-.results-breakdown-meta {
 
-}
-
-
-.dimension {
-  min-width: 12em;
-  padding: 1em var(--pad);
+.Report-metric {
+  border-top: 1px solid #eee;
+  margin: 3em 0;
+  padding-top: 3em;
 }
 
-.segment {
-  min-width: 12em;
-  padding: 1em var(--pad);
-  width: 22%;
+.Report-metricName {
+  margin: 0 0 1.5em;
 }
 
-.metric {
-  text-align: center;
-  width: 6em;
+.Report-metricShortname {
+  font-size: 4em;
+  font-weight: 500;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  margin: 0;
 }
 
-.result {
-  border-radius: 4px;
-  padding: 0.4em;
-  text-align: right;
-  white-space: nowrap;
-}
-.result.good {
-  background-color: hsla(150, 92%, 42%, 0.8);
-}
-.result.poor {
-  background-color: hsl(4, 100%, 63%, 0.8);
-}
-.result.ni {
-  background-color: hsl(39, 100%, 50%, 0.8);
+.Report-metricFullname {
+  color: #777;
+  text-decoration: none;
 }
 
-.results {
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
+.Report-metricFullname:hover,
+.Report-metricFullname:focus,
+.Report-metricFullname:active {
+  text-decoration: underline;
 }
 
-.results.isFetchingData {
-  opacity: 0;
+.Report-metricFullname > em {
+  color: #777;
+  text-decoration: none!important;
+  font-style: italics;
+}
+
+.Report-metricSummary {
+  font-size: 1.1em;
+}
+
+.Report-metricSummaryItem {
+  display: inline-block;
+  margin: 0.5em;
+}
+
+.Report-metricHistogram,
+.Report-metricTimeline {
+  margin: 4em 0;
+}
+
+.Report-metricHistogram {
+  height: 500px;
+}
+
+.Report-metricTimeline {
+  height: 300px;
 }

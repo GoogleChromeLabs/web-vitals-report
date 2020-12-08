@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-.Container {
-  padding: 0 var(--hgap);
+.Score {
+  border-radius: 4px;
+  padding: 0.4em;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.Container > * {
-  margin: var(--vgap-lg) auto;
-  max-width: 48em;
+.Score--good {
+  background-color: hsla(150, 92%, 42%, 0.8);
 }
 
-.Container--alternate {
-  background-color: #fff;
+.Score--poor {
+  background-color: hsl(4, 100%, 63%, 0.8);
+}
+
+.Score--ni {
+  background-color: hsl(39, 100%, 50%, 0.8);
+}
+
+.Score--alt {
+  color: #fff;
+  margin: 0 0.5em;
 }

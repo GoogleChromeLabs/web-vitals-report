@@ -134,9 +134,9 @@ function drawSummary(metric, segments) {
     const result = p75(values);
 
     html += `
-    <span class="metric-device-result">
+    <span class="Report-metricSummaryItem">
       ${e(name)}
-      <span class="metric-device-value ${score(metric, result)}">${
+      <span class="Score Score--alt Score--${score(metric, result)}">${
         result
       }</span>
     </span>
@@ -153,24 +153,27 @@ function drawTable(id, dimensionName, dimensionData) {
   document.getElementById(id).innerHTML = `
     <thead>
       <tr>
-        <th class="dimension">${e(dimensionName)}</th>
-        <th class="segment">Segment</th>
+        <th class="Table-dimension">${e(dimensionName)}</th>
+        <th class="Table-segment">Segment</th>
         ${metricNames.map((metric) => {
-          return `<th class="metric">${e(metric)}</th>`;
+          return `<th class="Table-metric">${e(metric)}</th>`;
         }).join('')}
       </tr>
     </thead>
     <tbody>
       ${dimensionData.slice(0, 5).map(([dimension, values]) => {
         return segmentNames.map((segment, i) => `<tr>
-          ${i === 0 ?
-              `<td class="dimension" rowspan="2">${e(dimension)}</td>` : ''}
-          <td class="segment">${e(segment)}</td>
+          ${i === 0
+            ? `<td class="Table-dimension" rowspan="2">${e(dimension)}</td>`
+            : ''}
+          <td class="Table-segment">${e(segment)}</td>
           ${metricNames.map((metric) => {
             const result = p75(values[metric][segment]);
             return `
               <td>
-                <div class="result ${score(metric, result)}">${result}</div>
+                <div class="Score Score--${score(metric, result)}">
+                  ${result}
+                </div>
               </td>
             `;
           }).join('')}
@@ -270,10 +273,9 @@ export function renderCharts(data) {
 
     drawTimeline(name, metric.dates);
 
-    document.getElementById('results').hidden = false;
+    document.getElementById('report').hidden = false;
   }
 
   drawTable('countries', 'Country', [...Object.entries(data.countries)]);
   drawTable('pages', 'Page', [...Object.entries(data.pages)]);
 }
-

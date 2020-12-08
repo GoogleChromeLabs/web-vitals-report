@@ -16,7 +16,10 @@
 
 :root {
   --vgap: 1.5em;
+  --vgap-lg: 2em;
+
   --hgap: 1.25em;
+
   --accent-color: hsl(218, 88%, 61%);
   --accent-color-active: hsl(218, 88%, 50%);
   --error-color: hsl(0, 60%, 50%);
@@ -25,7 +28,8 @@
 
 @media (min-width: 40em) {
   :root {
-    --vgap: 3em;
+    --vgap: 2em;
+    --vgap-lg: 4em;
     --hgap: 1.5em;
   }
 }
@@ -61,11 +65,6 @@ a:hover, a:focus, a:active {
   color: var(--accent-color-active);
 }
 
-form {
-  max-width: 36em;
-  margin: 2em auto;
-  text-align: left;
-}
 label {
   display: block;
   font-weight: 700;
@@ -86,32 +85,6 @@ input, select, .Button {
 }
 select[disabled] {
   color: transparent;
-}
-
-table {
-  --gap: 1.6rem;
-  --pad: 0.6rem;
-  table-layout: fixed;
-}
-table {
-  border-collapse: collapse;
-  margin: 4em 0;
-  max-width: 100%;
-  width: 100%;
-}
-table th {
-  background-color: hsla(0,0,0,.05);
-  vertical-align: bottom;
-}
-table th,
-table td {
-  padding: var(--pad);
-  text-align: left;
-  vertical-align: top;
-}
-table td, table th {
-  border-bottom: 1px solid hsla(0, 0%,0%,.1);
-  vertical-align: middle;
 }
 
 [hidden] {

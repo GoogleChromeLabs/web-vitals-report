@@ -20,7 +20,7 @@ have overlay scroll bars enabled. Consider removing if it becomes a problem.
 */
 .isSignedOut .AuthLayer {
   overflow: hidden;
-  height: calc(50px + var(--vgap));
+  height: calc(50px + var(--vgap-lg));
 }
 
 .isSignedIn .AuthLayer-signedIn,

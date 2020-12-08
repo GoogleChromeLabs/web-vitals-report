@@ -14,12 +14,34 @@
  * limitations under the License.
  */
 
-.form-field {
+.Form {
+  border-top: 1px solid hsl(30, 15%, 88%);
+  padding-top: 1em;
+  text-align: left;
+
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  flex-direction: column;
+}
+
+.Form-field,
+.Form-action {
+  max-width: 36em;
+  width: 100%;
+}
+
+.Form-field {
   margin-bottom: 1em;
 }
-.form-subfield {
+
+.Form-subfield {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: 1fr 1fr;
   margin-top: 1em;
 }
-.form-action {
-  margin-top: 2em;
+
+.Form-action {
+  margin: 2em 0 0;
 }

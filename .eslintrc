@@ -17,8 +17,9 @@
       "ignorePattern": "^\\s*import|^\\s*it\\(|^\\s*describe\\(",
       "ignoreUrls": true
     }],
+    "operator-linebreak": 0,
     "require-atomic-updates": 0,
     "require-jsdoc": 0,
-    "valid-jsdoc": 0
+    "valid-jsdoc": 0,
   }
 }

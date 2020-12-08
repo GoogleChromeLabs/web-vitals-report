@@ -106,11 +106,10 @@ function onSegmentsRecommendedChange(newValue) {
 }
 
 function onIsFetchingDataChange(newValue) {
-  const results = document.getElementById('results');
   if (newValue === true) {
-    results.classList.add('isFetchingData');
+    document.body.classList.add('isFetchingData');
   } else {
-    results.classList.remove('isFetchingData');
+    document.body.classList.remove('isFetchingData');
   }
 }
 
@@ -164,8 +163,8 @@ const app = (state, data) => {
       !state.segmentsRecommended && data.segmentOpts;
 
   return html`
-    <form @submit=${onSubmit}>
-      <div class="form-field">
+    <form class="Form" @submit=${onSubmit}>
+      <div class="Form-field">
         <label>1. Select a Google Analytics account</label>
         <select id="viewId" @input=${onChange}>
           ${data.viewOpts && Object.keys(data.viewOpts).map((accountName) => {
@@ -181,32 +180,32 @@ const app = (state, data) => {
           })}
         </select>
       </div>
-      <div class="form-field">
+      <div class="Form-field">
         <label>2. Choose a date range</label>
         <select id="dateRange" @input=${onChange}>
           ${renderOpts(state.dateRange, data.dateRangeOpts)}
         </select>
         ${showCustomDateRangeSelect ? html`
-          <div class="col2 form-subfield">
-            <div class="form-field">
+          <div class="Form-subfield">
+            <div class="Form-field">
               <label>Start date</label>
               <input id="startDate" @input=${onChange} type="date" />
             </div>
-            <div class="form-field">
+            <div class="Form-field">
               <label>End date</label>
               <input id="endDate" @input=${onChange} type="date" />
             </div>
           </div>` :
         null}
       </div>
-      <div class="form-field">
+      <div class="Form-field">
         <label>3. Compare segments</label>
         <select id="segmentsRecommended" @input=${onChange}>
           ${renderOpts(state.segmentsRecommended, data.segmentsRecommendedOpts)}
         </select>
         ${showCustomSegmentsSelect ? html`
-          <div id="segment-picker-custom" class="col2 form-subfield">
-            <div class="form-field">
+          <div class="Form-subfield">
+            <div class="Form-field">
               <label>First segment</label>
               <select id="segmentA" @input=${onChange}>
                 <optgroup label="Built-in Segments">
@@ -217,7 +216,7 @@ const app = (state, data) => {
                 </optgroup>
               </select>
             </div>
-            <div class="form-field">
+            <div class="Form-field">
               <label>Second segment</label>
               <select id="segmentB" @input=${onChange}>
                 <optgroup label="Built-in Segments">
@@ -231,7 +230,7 @@ const app = (state, data) => {
           </div>
         ` : null}
       </div>
-      <div class="form-action">
+      <div class="Form-action">
         <button class="Button" .disabled=${state.isFetchingData}>
           ${state.isFetchingData ? 'Loading...' : 'Submit'}
         </button>
