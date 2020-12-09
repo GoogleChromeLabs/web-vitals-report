@@ -7,7 +7,7 @@
     "build:clean": "rm -rf public",
     "build:compile": "rollup -c",
     "build": "run-s build:*",
-    "deploy": "git push --follow-tags && firebase deploy -P web-vitals-report",
+    "deploy": "NODE_ENV=production npm run build && firebase deploy -P web-vitals-report",
     "lint": "eslint rollup.config.js \"src/**/*.js\"",
     "lint:fix": "eslint --fix rollup.config.js \"src/**/*.js\"",
     "stage": "firebase deploy -P web-vitals-report-staging",

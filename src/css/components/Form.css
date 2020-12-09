@@ -60,7 +60,7 @@
 @media (min-width: 48em) {
   .Form-field,
   .Form-action {
-    max-width: 36em;
+    max-width: 40em;
   }
 }
 

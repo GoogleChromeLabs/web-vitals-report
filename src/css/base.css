@@ -28,7 +28,7 @@
 @media (min-width: 48em) {
   :root {
     --vgap: 2rem;
-    --vgap-lg: 4rem;
+    --vgap-lg: 3rem;
     --hgap: 1.5rem;
   }
 }
@@ -66,6 +66,11 @@ a {
 
 a:hover, a:focus, a:active {
   color: var(--accent-color-active);
+}
+
+b {
+  font-weight: normal;
+  font-size: 1.2em;
 }
 
 [hidden] {

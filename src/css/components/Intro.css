@@ -15,13 +15,16 @@
  */
 
 .Intro {
-  margin: calc(var(--vgap-lg) - 1em) auto 0;
+  margin: var(--vgap-lg) auto 0;
 }
 
 @media (min-width: 48em) {
   .Intro {
+    max-width: 40em;
+  }
+
+  .Intro-heading {
     text-align: center;
-    max-width: 42em;
   }
 }
 
