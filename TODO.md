@@ -10,8 +10,8 @@ P0
 - [x] Add web-vitals and other usage measurement analytics
 - [x] Productionize build
 - [x] Add error message explanation for > 1M rows
+- [x] Fix hard-coded metric names breaking customization
 - [ ] Write README
-- [ ] Remove metric name customization or fix hard coded instances in the JS
 
 P1
 
@@ -23,4 +23,5 @@ P2
 
 - [ ] Show report request progress
 - [ ] Make paginated API requests in parallel
+- [ ] Retry 500 API errors with backoff
 - [ ] Shareable Report Config URLs

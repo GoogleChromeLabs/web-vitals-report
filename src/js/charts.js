@@ -19,7 +19,7 @@
 import {e} from './utils.js';
 
 
-const COLORS = ['#aaa', '#2b79fe'];
+const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)'];
 
 function bucketValues(arrayOfValues, {maxValue, bucketSize = 10} = {}) {
   maxValue = maxValue || arrayOfValues[arrayOfValues.length - 1];

@@ -23,7 +23,6 @@ export function getDefaultOpts() {
     active: false,
     metricNameDim: 'ga:eventAction',
     metricIdDim: 'ga:eventLabel',
-    category: 'Web Vitals',
     lcpName: 'LCP',
     fidName: 'FID',
     clsName: 'CLS',
@@ -31,9 +30,22 @@ export function getDefaultOpts() {
   };
 }
 
+function getViewOpts(state) {
+  const stateOpts = state[`opts:${state.viewId}`];
+  return stateOpts && stateOpts.active ? stateOpts : getDefaultOpts();
+}
+
+
 export async function getWebVitalsData(state) {
   const reportRequest = buildReportRequest(state);
   const report = await getReport(reportRequest);
+
+  const opts = getViewOpts(state);
+  const metricNameMap = {
+    [opts.lcpName]: 'LCP',
+    [opts.fidName]: 'FID',
+    [opts.clsName]: 'CLS',
+  };
 
   if (report.length === 0) {
     throw new WebVitalsError({
@@ -80,8 +92,11 @@ export async function getWebVitalsData(state) {
 
   for (const row of report) {
     let value = Number(row.metrics[0].values[0]);
-    const [segmentId, date, metric, country, page] = row.dimensions;
+    let [segmentId, date, metric, country, page] = row.dimensions;
     const segment = getSegmentNameById(segmentId);
+
+    // Convert the metric from any custom name to the standard name.
+    metric = metricNameMap[metric];
 
     // CLS is sent to Google Analytics at 1000x for greater precision.
     if (metric === 'CLS') {
@@ -177,8 +192,7 @@ function parseFilters(filtersExpression) {
 
 function buildReportRequest(state) {
   const {viewId, startDate, endDate, segmentA, segmentB} = state;
-  const stateOpts = state[`opts:${viewId}`];
-  const opts = stateOpts && stateOpts.active ? stateOpts : getDefaultOpts();
+  const opts = getViewOpts(state);
 
   let filters = [
     {
