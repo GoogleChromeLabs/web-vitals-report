@@ -167,10 +167,7 @@ async function onSubmit(event) {
     ]);
     renderCharts(data);
   } catch (error) {
-    addAlert({
-      title: 'Oops, something went wrong!',
-      body: error.message,
-    });
+    addAlert(error);
     console.error(error);
   } finally {
     setState({isFetchingData: false});

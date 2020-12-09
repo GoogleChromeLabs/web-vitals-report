@@ -9,12 +9,14 @@ P0
 - [x] Add a banner indicating no GA4 support
 - [x] Add web-vitals and other usage measurement analytics
 - [x] Productionize build
+- [x] Add error message explanation for > 1M rows
 - [ ] Write README
-- [ ] Add error message explanation for > 1M rows
+- [ ] Remove metric name customization or fix hard coded instances in the JS
 
 P1
 
 - [x] Add advanced customization options (filters, remap dimensions, etc.)
+
 - [ ] Add links to the code on GitHub
 
 P2

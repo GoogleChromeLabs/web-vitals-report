@@ -19,6 +19,7 @@ import {nextFrame, timeout} from './utils.js';
 
 
 const ALERT_TRANSITION_TIME = 200;
+const DEFAULT_TITLE = 'Oops, something went wrong!';
 
 const state = {};
 let alertShowing = false;
@@ -29,9 +30,9 @@ let alertShowing = false;
  * @return {string} The icon markup.
  */
 function renderIcon(id) {
-  const xlinkHref = `#icon-${id}`;
+  const href = `#icon-${id}`;
   return svg`<svg class="Icon" viewBox="0 0 24 24">
-    <use href=${xlinkHref}></use>
+    <use href=${href}></use>
   </svg>`;
 }
 
@@ -47,7 +48,7 @@ function renderAlert() {
       </div>
       <div class="Alert-body">
         <h1 class="Alert-title">${state.title}</h1>
-        <div class="Alert-message">${state.body}</div>
+        <div class="Alert-message">${state.message}</div>
       </div>
       <button @click=${remove} class="Alert-close">
         ${renderIcon('close')}
@@ -97,7 +98,9 @@ export async function addAlert(data) {
     await remove();
   }
 
-  Object.assign(state, data);
+  state.title = data.title || DEFAULT_TITLE;
+  state.message = data.message;
+
   alertShowing = true;
   renderAlertContainer();
 

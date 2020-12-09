@@ -15,6 +15,7 @@
  */
 
 import {getReport, getSegmentNameById} from './api.js';
+import {WebVitalsError} from './utils.js';
 
 
 export function getDefaultOpts() {
@@ -35,7 +36,14 @@ export async function getWebVitalsData(state) {
   const report = await getReport(reportRequest);
 
   if (report.length === 0) {
-    throw new Error('No Web Vitals events found.');
+    throw new WebVitalsError({
+      title: 'No Web Vitals events found...',
+      message: [
+        'It looks like no Web Vitals data has been sent to this Google',
+        'Analytics account. You can learn how to measure and send Web Vitals',
+        'data here: https://github.com/GoogleChrome/web-vitals',
+      ].join(' '),
+    });
   }
 
   const getSegmentsObj = (getDefaultValue = () => []) => {
@@ -134,9 +142,10 @@ export async function getWebVitalsData(state) {
 
 function parseFilters(filtersExpression) {
   if (filtersExpression.match(/[^\\],/)) {
-    throw new Error('OR based filter expressions (using a comma) are not ' +
-        'supported. Only AND based filter expressions (using a semicolon) ' +
-        'are allowed.');
+    throw new Error([
+      'OR based filter expressions (using a comma) are not supported.',
+      'Only AND based filter expressions (using a semicolon) are allowed.',
+    ].join());
   }
 
   // TODO: add support for escaping semicolons.
@@ -172,11 +181,6 @@ function buildReportRequest(state) {
   const opts = stateOpts && stateOpts.active ? stateOpts : getDefaultOpts();
 
   let filters = [
-    {
-      dimensionName: 'ga:eventCategory',
-      operator: 'EXACT',
-      expressions: ['Web Vitals'],
-    },
     {
       dimensionName: opts.metricNameDim,
       operator: 'IN_LIST',

@@ -59,7 +59,6 @@ export function setState(updates) {
   for (const [key, value] of Object.entries(updates)) {
     if (oldState[key] !== value) {
       stateDidChange = true;
-      console.log('change', key, value, oldState[key]);
       runChangeListeners(key, value, oldState[key]);
     }
   }

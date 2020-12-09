@@ -16,7 +16,7 @@
 
 import {openDB} from 'idb';
 import {getAccessToken} from './auth.js';
-import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
+import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate, WebVitalsError} from './utils.js';
 
 
 const MANAGEMENT_API_URL =
@@ -189,15 +189,18 @@ export async function getReportFromAPI(reportRequest, onProgress) {
     if (totalRows >= 1e6) {
       const {startDate, endDate} = reportRequest.dateRanges[0];
       if (startDate !== endDate) {
-        console.log('Too much data! Splitting up dates:', totalRows);
-
         const dateRanges = getDatesInRange(startDate, endDate).map((date) => {
           return {startDate: date, endDate: date};
         });
         return await getReportByDatesFromAPI(reportRequest, dateRanges);
       } else {
-        console.log(
-            'Report > 1e6 rows, even for a single day:', totalRows, startDate);
+        throw new WebVitalsError({
+          title: 'Sorry, cannot create report...',
+          message: [
+            'This account contains more than 1 million Web Vitals events per',
+            'day, which is the maximum that can be reported on using the API.',
+          ].join(' '),
+        });
       }
     }
 
