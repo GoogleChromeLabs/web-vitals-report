@@ -42,7 +42,6 @@ const thresholds = {
   LCP: [2500, 4000],
 };
 
-
 function getRating(value, thresholds) {
   if (value > thresholds[1]) {
     return 'poor';
@@ -53,12 +52,64 @@ function getRating(value, thresholds) {
   return 'good';
 }
 
-function sendToGoogleAnalytics({name, value, delta, id}) {
+function getElementPath(el) {
+  try {
+    let name = el.nodeName.toLowerCase();
+    if (name === 'body') {
+      return 'html>body';
+    }
+    if (el.id) {
+      return `${name}#${el.id}`;
+    }
+    if (el.className.length) {
+      name += `.${[...el.classList.values()].join('.')}`;
+    }
+    return `${getElementPath(el.parentElement)}>${name}`;
+  } catch (error) {
+    return '(error)';
+  }
+}
+
+function getDebugElement(name, entries = []) {
+  const firstEntry = entries[0];
+  const lastEntry = entries[entries.length - 1];
+
+  switch (name) {
+    case 'LCP':
+      if (lastEntry) {
+        return getElementPath(lastEntry.element);
+      }
+    case 'FID':
+      if (firstEntry) {
+        return getElementPath(firstEntry.target);
+      }
+    case 'CLS':
+      if (entries.length) {
+        const largestShift = entries.reduce((a, b) => {
+          return a && a.value > b.value ? a : b;
+        });
+        if (largestShift && largestShift.sources) {
+          const largestSource = largestShift.sources.reduce((a, b) => {
+            return a.node && a.previousRect.width * a.previousRect.height >
+                b.previousRect.width * b.previousRect.height ? a : b;
+          });
+          if (largestSource) {
+            return getElementPath(largestSource.node);
+          }
+        }
+      }
+    default:
+      return '(not set)';
+  }
+}
+
+function sendToGoogleAnalytics({name, value, delta, id, entries}) {
   gtag('event', name, {
     value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     event_category: 'Web Vitals',
     event_label: id,
     event_meta: getRating(value, thresholds[name]),
+    event_debug: getDebugElement(name, entries),
     non_interaction: true,
   });
 }
