@@ -153,26 +153,35 @@ async function onSubmit(event) {
     onDateRangeChange(dateRange);
   }
 
+  const startTime = performance.now();
+  let report;
+  let error;
   try {
     setState({isFetchingData: true});
 
     // Ensure the Highcharts library (loaded async) is ready.
     await windowLoaded;
 
-    const [data] = await Promise.all([
+    const results = await Promise.all([
       getWebVitalsData(getState()),
-      // Make the request at least 1 second long. If the request completes too
-      // quickly it's not always obvious something happened.
-      timeout(1000),
+      // Make the request at least 300ms long so the animation can complete.
+      // If the animation ends too quickly it's not obvious anything happened.
+      timeout(300),
     ]);
-    renderCharts(data);
-  } catch (error) {
-    addAlert(error);
-    console.error(error);
+    report = results[0];
+    renderCharts(report.data);
+  } catch (requestError) {
+    console.error(requestError);
+    addAlert(requestError);
+    error = requestError;
   } finally {
     setState({isFetchingData: false});
-
-    measureReport(getState());
+    measureReport({
+      state: getState(),
+      duration: Math.round(performance.now() - startTime),
+      report,
+      error,
+    });
   }
 }
 

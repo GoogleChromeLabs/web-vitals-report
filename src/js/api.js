@@ -16,7 +16,8 @@
 
 import {openDB} from 'idb';
 import {getAccessToken} from './auth.js';
-import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate, WebVitalsError} from './utils.js';
+import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
+import {WebVitalsError} from './WebVitalsError.js';
 
 
 const MANAGEMENT_API_URL =
@@ -109,13 +110,13 @@ function getSegmentIdByName(segmentName, reportRequest) {
   return null;
 }
 
-export function getReport(reportRequests, onProgress) {
+export function getReport(reportRequest, onProgress) {
   // Use the cache-aware API function if available, otherwise use the
   // standard API request function without caching.
   if (typeof getReportFromCacheAndAPI === 'function') {
-    return getReportFromCacheAndAPI(reportRequests, onProgress);
+    return getReportFromCacheAndAPI(reportRequest, onProgress);
   }
-  return getReportFromAPI(reportRequests, onProgress);
+  return getReportFromAPI(reportRequest, onProgress);
 }
 
 
@@ -171,6 +172,12 @@ export async function makeReportingAPIRequest(reportRequest) {
 }
 
 export async function getReportFromAPI(reportRequest, onProgress) {
+  const rows = await getReportRowsFromAPI(reportRequest, onProgress);
+  const source = sourcesNameMap[sources.NETWORK];
+  return {rows, meta: {source}};
+}
+
+async function getReportRowsFromAPI(reportRequest, onProgress) {
   let totalRows;
   let report;
   let rows = [];
@@ -192,15 +199,9 @@ export async function getReportFromAPI(reportRequest, onProgress) {
         const dateRanges = getDatesInRange(startDate, endDate).map((date) => {
           return {startDate: date, endDate: date};
         });
-        return await getReportByDatesFromAPI(reportRequest, dateRanges);
+        return await getReportRowsByDatesFromAPI(reportRequest, dateRanges);
       } else {
-        throw new WebVitalsError({
-          title: 'Sorry, cannot create report...',
-          message: [
-            'This account contains more than 1 million Web Vitals events per',
-            'day, which is the maximum that can be reported on using the API.',
-          ].join(' '),
-        });
+        throw new WebVitalsError('row_limit_exceeded');
       }
     }
 
@@ -351,6 +352,15 @@ function getMissingRanges(reportRequest, cachedData) {
   return missingRanges;
 }
 
+const sources = {
+  CACHE: 1,
+  NETWORK: 2,
+  MIXED: 3,
+};
+
+const sourcesNameMap = Object.fromEntries(
+    Object.entries(sources).map(([k, v]) => [v, k.toLowerCase()]));
+
 async function getReportFromCacheAndAPI(reportRequest) {
   const {viewId, segments, dimensions, dimensionFilterClauses} = reportRequest;
   const {startDate, endDate} = reportRequest.dateRanges[0];
@@ -366,34 +376,37 @@ async function getReportFromCacheAndAPI(reportRequest) {
   let cachedReport = [];
   for (const segment of cachedData) {
     for (const rows of Object.values(segment)) {
-      cachedReport = mergeReports(cachedReport, rows);
+      cachedReport = mergeReportRows(cachedReport, rows);
     }
   }
 
   const missingRangesFromCache = getMissingRanges(reportRequest, cachedData);
-  console.log({missingRangesFromCache});
 
   const networkReport =
-    await getReportByDatesFromAPI(reportRequest, missingRangesFromCache);
+    await getReportRowsByDatesFromAPI(reportRequest, missingRangesFromCache);
 
   // Don't await.
   updateCachedData(viewId, optsHash, networkReport);
 
-  return mergeReports(cachedReport, networkReport);
+  const rows = mergeReportRows(cachedReport, networkReport);
+  const source = sourcesNameMap[
+      (missingRangesFromCache.length ? sources.NETWORK : 0) +
+      (cachedReport.length ? sources.CACHE : 0)];
+
+  return {rows, meta: {source}};
 }
 
-
-async function getReportByDatesFromAPI(reportRequest, dateRanges) {
-  const reports = await Promise.all(
+async function getReportRowsByDatesFromAPI(reportRequest, dateRanges) {
+  const rows = await Promise.all(
     dateRanges.map(async (dateRange) => {
       const newReportRequest =
           getReportRequestForDates(reportRequest, dateRange);
 
-      return await getReportFromAPI(newReportRequest);
+      return await getReportRowsFromAPI(newReportRequest);
     }),
   );
 
-  return reports.reduce((prev, next) => mergeReports(prev, next), []);
+  return rows.reduce((prev, next) => mergeReportRows(prev, next), []);
 }
 
 function getReportRequestForDates(reportRequest, dateRange) {
@@ -403,7 +416,7 @@ function getReportRequestForDates(reportRequest, dateRange) {
   return reportRequestClone;
 }
 
-function mergeReports(r1, r2) {
+function mergeReportRows(r1, r2) {
   // If either of the reportData objects are undefined, return the other.
   if (!(r1 && r2)) return r1 || r2;
 

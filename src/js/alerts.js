@@ -93,13 +93,13 @@ async function remove() {
   renderAlertContainer();
 }
 
-export async function addAlert(data) {
+export async function addAlert(error) {
   if (alertShowing) {
     await remove();
   }
 
-  state.title = data.title || DEFAULT_TITLE;
-  state.message = data.message;
+  state.title = error.title || DEFAULT_TITLE;
+  state.message = error.message;
 
   alertShowing = true;
   renderAlertContainer();

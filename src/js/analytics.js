@@ -20,15 +20,18 @@ import {getCLS, getFCP, getFID, getLCP} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
 const config = {
-  measurement_version: '1',
+  measurement_version: '2',
   transport_type: 'beacon',
   page_path: location.pathname,
   debug_mode: location.hostname !== 'web-vitals-report.web.app',
   custom_map: {
     dimension1: 'measurement_version',
     dimension2: 'client_id',
-    dimension3: 'event_meta',
-    dimension4: 'segments',
+    dimension3: 'segments',
+    dimension4: 'config',
+    dimension5: 'event_meta',
+    dimension6: 'event_debug',
+    metric1: 'report_size',
   },
 };
 
@@ -75,13 +78,31 @@ function anonymizeSegment(id) {
   }
 }
 
-export function measureReport(state) {
-  gtag('event', 'report', {
-    event_category: 'Usage',
+function anonymizeConfig(state) {
+  const opts = state[`opts:${state.viewId}`];
+  if (opts && opts.active) {
+    return [
+      `id=${opts.metricIdDim}`,
+      `name=${opts.metricNameDim}`,
+      `metrics=${[opts.lcpName, opts.fidName, opts.clsName].join(',')}`,
+      `filters=${opts.filters}`,
+    ].join('|');
+  }
+  return '(not set)';
+}
+
+export function measureReport({state, duration, report, error}) {
+  gtag('event', `report-${error ? 'error' : 'success'}`, {
+    value: duration,
+    report_size: report ? report.rows.length : 0,
     segments: [
       anonymizeSegment(state.segmentA),
       anonymizeSegment(state.segmentB),
     ].sort().join(', '),
+    config: anonymizeConfig(state),
+    event_category: 'Usage',
+    event_label: error ? (error.code || error.message) : '(not set)',
+    event_meta: report ? report.meta.source : '(not set)',
   });
 }
 
@@ -96,4 +117,3 @@ export function initAnalytics() {
 
   measureWebVitals();
 }
-

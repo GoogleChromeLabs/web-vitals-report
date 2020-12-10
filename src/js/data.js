@@ -15,7 +15,7 @@
  */
 
 import {getReport, getSegmentNameById} from './api.js';
-import {WebVitalsError} from './utils.js';
+import {WebVitalsError} from './WebVitalsError.js';
 
 
 export function getDefaultOpts() {
@@ -38,7 +38,7 @@ function getViewOpts(state) {
 
 export async function getWebVitalsData(state) {
   const reportRequest = buildReportRequest(state);
-  const report = await getReport(reportRequest);
+  const {rows, meta} = await getReport(reportRequest);
 
   const opts = getViewOpts(state);
   const metricNameMap = {
@@ -47,15 +47,8 @@ export async function getWebVitalsData(state) {
     [opts.clsName]: 'CLS',
   };
 
-  if (report.length === 0) {
-    throw new WebVitalsError({
-      title: 'No Web Vitals events found...',
-      message: [
-        'It looks like no Web Vitals data has been sent to this Google',
-        'Analytics account. You can learn how to measure and send Web Vitals',
-        'data here: https://github.com/GoogleChrome/web-vitals',
-      ].join(' '),
-    });
+  if (rows.length === 0) {
+    throw new WebVitalsError('no_web_vitals_events');
   }
 
   const getSegmentsObj = (getDefaultValue = () => []) => {
@@ -90,7 +83,7 @@ export async function getWebVitalsData(state) {
     pages: [],
   };
 
-  for (const row of report) {
+  for (const row of rows) {
     let value = Number(row.metrics[0].values[0]);
     let [segmentId, date, metric, country, page] = row.dimensions;
     const segment = getSegmentNameById(segmentId);
@@ -111,7 +104,7 @@ export async function getWebVitalsData(state) {
     // reduce the date range or add filters) and manually combine the data
     // yourself.
     if (metric !== 'LCP' && metric !== 'FID' && metric !== 'CLS') {
-      throw new Error(`Error: unexpected metric '${metric}' found.`);
+      throw new WebVitalsError('unexpected_metric', metric);
     }
 
     const metricData = data.metrics[metric];
@@ -152,22 +145,19 @@ export async function getWebVitalsData(state) {
   data.countries = sortObjByCount(data.countries);
   data.pages = sortObjByCount(data.pages);
 
-  return data;
+  return {data, rows, meta};
 }
 
 function parseFilters(filtersExpression) {
   if (filtersExpression.match(/[^\\],/)) {
-    throw new Error([
-      'OR based filter expressions (using a comma) are not supported.',
-      'Only AND based filter expressions (using a semicolon) are allowed.',
-    ].join());
+    throw new WebVitalsError('unsupported_filter_expression');
   }
 
   // TODO: add support for escaping semicolons.
   return filtersExpression.split(';').map((expression) => {
     const match = /(ga:\w+)([!=][=@~])(.+)$/.exec(expression);
     if (!match) {
-      throw new Error(`Invalid filter expression '${expression}'`);
+      throw new WebVitalsError('invalid_filter_expression', expression);
     }
 
     const filter = {
