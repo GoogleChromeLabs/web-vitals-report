@@ -52,7 +52,7 @@ function getRating(value, thresholds) {
   return 'good';
 }
 
-function getElementPath(el) {
+function getElementPath(el, containers) {
   try {
     let name = el.nodeName.toLowerCase();
     if (name === 'body') {
@@ -70,7 +70,7 @@ function getElementPath(el) {
   }
 }
 
-function getDebugElement(name, entries = []) {
+function getDebugInfo(name, entries = []) {
   const firstEntry = entries[0];
   const lastEntry = entries[entries.length - 1];
 
@@ -81,7 +81,14 @@ function getDebugElement(name, entries = []) {
       }
     case 'FID':
       if (firstEntry) {
-        return getElementPath(firstEntry.target);
+        const {name} = firstEntry;
+        // Report interactions with the `google-signin2` element as that,
+        // not any of the sub-elements.
+        console.log(name);
+        if (firstEntry.target.closest('#google-signin2')) {
+          return `${name}:#google-signin2`;
+        }
+        return `${name}:${getElementPath(firstEntry.target)}`;
       }
     case 'CLS':
       if (entries.length) {
@@ -109,7 +116,7 @@ function sendToGoogleAnalytics({name, value, delta, id, entries}) {
     event_category: 'Web Vitals',
     event_label: id,
     event_meta: getRating(value, thresholds[name]),
-    event_debug: getDebugElement(name, entries),
+    event_debug: getDebugInfo(name, entries),
     non_interaction: true,
   });
 }

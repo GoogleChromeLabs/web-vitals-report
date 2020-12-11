@@ -18,6 +18,36 @@
   margin: var(--vgap-lg) auto 0;
 }
 
+.Intro-heading {
+  margin: 0;
+}
+.Intro-heading > span {
+  white-space: nowrap;
+}
+
+.Intro-links {
+  display: flex;
+  font-size: 0.9em;
+  margin: 1rem 0 2.5rem;
+}
+
+.Intro-link > svg {
+  font-size: 1.2em;
+  margin-right: 0.333em;
+}
+
+.Intro-link {
+  color: #444!important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1em;
+}
+
+.Intro-link:last-child {
+  margin: 0;
+}
+
 @media (min-width: 48em) {
   .Intro {
     max-width: 40em;
@@ -25,6 +55,12 @@
 
   .Intro-heading {
     text-align: center;
+  }
+
+  .Intro-links {
+    align-items: center;
+    justify-content: center;
+    margin: 1.25rem 0 2.5rem;
   }
 }
 

@@ -194,8 +194,7 @@ function renderOpts(selected, options) {
 const app = (state, data) => {
   const opts = validateOpts(state[`opts:${state.viewId}`]);
   const showCustomDateRangeSelect = state.dateRange < 0;
-  const showCustomSegmentsSelect =
-      !state.segmentsRecommended && data.segmentOpts;
+  const showCustomSegmentsSelect = !state.segmentsRecommended;
 
   return html`
     <form class="Form" @input=${onChange} @submit=${onSubmit}>
@@ -243,23 +242,27 @@ const app = (state, data) => {
             <div class="Form-field">
               <label>First segment</label>
               <select id="segmentA">
+               ${data.segmentOpts ? html`
                 <optgroup label="Built-in Segments">
                   ${renderOpts(state.segmentA, data.segmentOpts.BUILT_IN)}
                 </optgroup>
                 <optgroup label="Custom Segments">
                   ${renderOpts(state.segmentA, data.segmentOpts.CUSTOM)}
                 </optgroup>
+               ` : null}
               </select>
             </div>
             <div class="Form-field">
               <label>Second segment</label>
               <select id="segmentB">
-                <optgroup label="Built-in Segments">
-                  ${renderOpts(state.segmentB, data.segmentOpts.BUILT_IN)}
-                </optgroup>
-                <optgroup label="Custom Segments">
-                  ${renderOpts(state.segmentB, data.segmentOpts.CUSTOM)}
-                </optgroup>
+                ${data.segmentOpts ? html`
+                  <optgroup label="Built-in Segments">
+                    ${renderOpts(state.segmentB, data.segmentOpts.BUILT_IN)}
+                  </optgroup>
+                  <optgroup label="Custom Segments">
+                    ${renderOpts(state.segmentB, data.segmentOpts.CUSTOM)}
+                  </optgroup>
+                ` : null}
               </select>
             </div>
           </div>
