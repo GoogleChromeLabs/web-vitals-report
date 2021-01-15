@@ -20,7 +20,7 @@ import {getCLS, getFCP, getFID, getLCP} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
 const config = {
-  measurement_version: '2',
+  measurement_version: '3',
   transport_type: 'beacon',
   page_path: location.pathname,
   debug_mode: location.hostname !== 'web-vitals-report.web.app',
@@ -52,19 +52,19 @@ function getRating(value, thresholds) {
   return 'good';
 }
 
-function getElementPath(el, containers) {
+function getNodePath(node) {
   try {
-    let name = el.nodeName.toLowerCase();
+    let name = node.nodeName.toLowerCase();
     if (name === 'body') {
       return 'html>body';
     }
-    if (el.id) {
-      return `${name}#${el.id}`;
+    if (node.id) {
+      return `${name}#${node.id}`;
     }
-    if (el.className.length) {
-      name += `.${[...el.classList.values()].join('.')}`;
+    if (node.className && node.className.length) {
+      name += `.${[...node.classList.values()].join('.')}`;
     }
-    return `${getElementPath(el.parentElement)}>${name}`;
+    return `${getNodePath(node.parentElement)}>${name}`;
   } catch (error) {
     return '(error)';
   }
@@ -77,18 +77,17 @@ function getDebugInfo(name, entries = []) {
   switch (name) {
     case 'LCP':
       if (lastEntry) {
-        return getElementPath(lastEntry.element);
+        return getNodePath(lastEntry.element);
       }
     case 'FID':
       if (firstEntry) {
         const {name} = firstEntry;
         // Report interactions with the `google-signin2` element as that,
         // not any of the sub-elements.
-        console.log(name);
         if (firstEntry.target.closest('#google-signin2')) {
-          return `${name}:#google-signin2`;
+          return `${name}(#google-signin2)`;
         }
-        return `${name}:${getElementPath(firstEntry.target)}`;
+        return `${name}(${getNodePath(firstEntry.target)})`;
       }
     case 'CLS':
       if (entries.length) {
@@ -101,7 +100,7 @@ function getDebugInfo(name, entries = []) {
                 b.previousRect.width * b.previousRect.height ? a : b;
           });
           if (largestSource) {
-            return getElementPath(largestSource.node);
+            return getNodePath(largestSource.node);
           }
         }
       }
