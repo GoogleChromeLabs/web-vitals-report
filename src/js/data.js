@@ -30,17 +30,11 @@ export function getDefaultOpts() {
   };
 }
 
-function getViewOpts(state) {
-  const stateOpts = state[`opts:${state.viewId}`];
-  return stateOpts && stateOpts.active ? stateOpts : getDefaultOpts();
-}
 
-
-export async function getWebVitalsData(state) {
-  const reportRequest = buildReportRequest(state);
+export async function getWebVitalsData(state, opts) {
+  const reportRequest = buildReportRequest(state, opts);
   const {rows, meta} = await getReport(reportRequest);
 
-  const opts = getViewOpts(state);
   const metricNameMap = {
     [opts.lcpName]: 'LCP',
     [opts.fidName]: 'FID',
@@ -79,13 +73,17 @@ export async function getWebVitalsData(state) {
     metrics: getMetricsObj(() => {
       return {values: [], segments: getSegmentsObj(), dates: {}};
     }),
-    countries: [],
-    pages: [],
+    countries: {},
+    pages: {},
   };
 
   for (const row of rows) {
     let value = Number(row.metrics[0].values[0]);
     let [segmentId, date, metric, country, page] = row.dimensions;
+
+    const debugId = opts.active && opts.debugDim ?
+        row.dimensions[row.dimensions.length - 1] : null;
+
     const segment = getSegmentNameById(segmentId);
 
     // Convert the metric from any custom name to the standard name.
@@ -118,15 +116,24 @@ export async function getWebVitalsData(state) {
     metricData.dates[date] = metricData.dates[date] || getSegmentsObj();
     metricData.dates[date][segment].push(value);
 
-    // Breakdown by page.
-    data.pages[page] = data.pages[page] || getMetricsObj();
-    data.pages[page][metric][segment].push(value);
-    incrementCount(data.pages[page]);
-
     // Breakdown by country.
     data.countries[country] = data.countries[country] || getMetricsObj();
     data.countries[country][metric][segment].push(value);
     incrementCount(data.countries[country]);
+
+    // Breakdown by page.
+    data.pages[page] = data.pages[page] || getMetricsObj();
+    const pageSeg = data.pages[page][metric][segment];
+    pageSeg.push(value);
+    incrementCount(data.pages[page]);
+
+    // Debug info by page.
+    if (debugId) {
+      pageSeg.debug = pageSeg.debug || {};
+      pageSeg.debug[debugId] = pageSeg.debug[debugId] || [];
+      pageSeg.debug[debugId].push(value);
+      incrementCount(pageSeg.debug[debugId]);
+    }
   }
 
   // Sort data
@@ -180,9 +187,21 @@ function parseFilters(filtersExpression) {
   });
 }
 
-function buildReportRequest(state) {
+function buildReportRequest(state, opts) {
   const {viewId, startDate, endDate, segmentA, segmentB} = state;
-  const opts = getViewOpts(state);
+
+  const dimensions = [
+    {name: 'ga:segment'},
+    {name: 'ga:date'},
+    {name: opts.metricNameDim}, // Metric name (ga:eventAction)
+    {name: 'ga:country'},
+    {name: 'ga:pagePath'},
+    {name: opts.metricIdDim}, // Unique metric ID (ga:eventLabel)
+  ];
+
+  if (opts.active && opts.debugDim) {
+    dimensions.push({name: opts.debugDim});
+  }
 
   let filters = [
     {
@@ -206,14 +225,7 @@ function buildReportRequest(state) {
       {segmentId: `gaid::${segmentB}`},
     ],
     metrics: [{expression: 'ga:eventValue'}],
-    dimensions: [
-      {name: 'ga:segment'},
-      {name: 'ga:date'},
-      {name: opts.metricNameDim}, // Metric name (ga:eventAction)
-      {name: 'ga:country'},
-      {name: 'ga:pagePath'},
-      {name: opts.metricIdDim}, // Unique metric ID (ga:eventLabel)
-    ],
+    dimensions,
     dimensionFilterClauses: {
       operator: 'AND',
       filters,

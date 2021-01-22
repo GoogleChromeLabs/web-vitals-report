@@ -110,3 +110,8 @@ export async function hashObj(obj) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+export function round(num, decimalPlaces) {
+  const multiplier = Math.pow(10, decimalPlaces);
+  return Math.round(num * multiplier) / multiplier;
+}

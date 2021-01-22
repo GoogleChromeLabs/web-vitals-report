@@ -55,6 +55,7 @@ function validateOpts(opts = {}) {
     fidName: 'FID',
     clsName: 'CLS',
     filters: '',
+    debugDim: '',
     ...opts,
   };
 }
@@ -162,14 +163,17 @@ async function onSubmit(event) {
     // Ensure the Highcharts library (loaded async) is ready.
     await windowLoaded;
 
+    const reportState = getState();
+    const reportOpts = validateOpts(reportState[`opts:${reportState.viewId}`]);
+
     const results = await Promise.all([
-      getWebVitalsData(getState()),
+      getWebVitalsData(reportState, reportOpts),
       // Make the request at least 300ms long so the animation can complete.
       // If the animation ends too quickly it's not obvious anything happened.
       timeout(300),
     ]);
     report = results[0];
-    renderCharts(report.data);
+    renderCharts(report.data, reportOpts);
   } catch (requestError) {
     console.error(requestError);
     addAlert(requestError);
@@ -304,7 +308,12 @@ const app = (state, data) => {
               </div>
             </div>
             <div class="Form-field">
-              <label>Additional filters</label>
+              <label>Debug dimension <em>(optional)</em></label>
+              <input id="opts:debugDim" type="text"
+                    .value=${opts.debugDim}>
+            </div>
+            <div class="Form-field">
+              <label>Additional filters <em>(optional)</em></label>
               <input id="opts:filters" type="text"
                      .value=${opts.filters}>
             </div>

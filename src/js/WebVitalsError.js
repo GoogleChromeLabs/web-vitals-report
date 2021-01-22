@@ -18,9 +18,10 @@ const errorMap = {
   'no_web_vitals_events': {
     title: 'No Web Vitals events found...',
     message: [
-      'It looks like no Web Vitals data has been sent to this Google',
-      'Analytics account. You can learn how to measure and send Web Vitals',
-      'data here: https://github.com/GoogleChrome/web-vitals',
+      'This report does not contain any Web Vitals event data. Make sure',
+      'the account selected received Web Vitals events for the date range and',
+      'and configuration options selected. You can learn how to measure and',
+      'send Web Vitals data here: https://github.com/GoogleChrome/web-vitals',
     ].join(' '),
   },
   'row_limit_exceeded': {

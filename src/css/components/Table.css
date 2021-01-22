@@ -23,35 +23,22 @@
 .Table > table {
   border-collapse: collapse;
   min-width: 42em;
-  table-layout: fixed;
   width: 100%;
-}
-
-.Table th {
-  background-color: hsla(0,0,0,.05);
-  vertical-align: bottom;
-}
-
-.Table th,
-.Table td {
-  padding: 0.6rem;
-  text-align: left;
-  vertical-align: top;
 }
 
 .Table td,
 .Table th {
   border-bottom: 1px solid hsla(0, 0%,0%,.1);
+  padding: 0.6rem;
+  text-align: left;
   vertical-align: middle;
 }
 
 .Table-dimension {
-  min-width: 12em;
   padding: 1em 0.6rem;
 }
 
 .Table-segment {
-  min-width: 12em;
   padding: 1em 0.6rem;
   width: 22%;
 }
@@ -59,4 +46,34 @@
 .Table-metric {
   text-align: center!important;
   width: 6em;
+}
+
+.Table-value {
+  text-align: right!important;
+  white-space: nowrap;
+  width: 6em;
+}
+
+.Table-debugHeader {
+  border-bottom: 2px solid #000!important;
+  font-size: 1.2em;
+  font-weight: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
+}
+
+.Table-debugMetricHeader {
+  background: rgba(0,0,0,.2);
+  vertical-align: middle!important;
+}
+
+.Table-debugSegment {
+  background: rgba(0,0,0,.1);
+  vertical-align: top!important;
+}
+
+.Table-debugSpacer {
+  min-width: 10em;
 }

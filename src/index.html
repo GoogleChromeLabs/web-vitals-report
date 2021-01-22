@@ -23,7 +23,7 @@
 </head>
 
 <body>
-  <header class="TopBar">
+  <header id="header" class="TopBar">
     <span class="TopBar-logo">
       <svg class="Icon" viewBox="0 0 120 100" style="">
         <use href="#icon-web-vitals"></use>
@@ -40,7 +40,7 @@
     <strong>Note: </strong> this tool does not yet support <a href="https://www.blog.google/products/marketingplatform/analytics/new_google_analytics/">Google Analytics 4 (GA4)</a>, as the GA4 APIs are still in <a href="https://developers.google.com/analytics/devguides/reporting/data/v1">alpha preview</a> and some required features are missing.
   </aside>
 
-  <main>
+  <main id="main">
     <div class="Container">
       <section class="Intro">
         <h2 class="Intro-heading">Create your <span>Web Vitals report</span></h2>
@@ -126,6 +126,8 @@
         <div class="Table">
           <table id="pages"></table>
         </div>
+
+        <div id="debug"></div>
       </section>
     </div>
   </main>
@@ -173,7 +175,7 @@
   <script type="module" src="./main.js"></script>
   <script defer src="https://apis.google.com/js/client:platform.js?onload=onGApiLoad"></script>
   <script defer src="https://code.highcharts.com/highcharts.js"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P1J6CQWJ4R"></script>
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-P1J6CQWJ4R"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}

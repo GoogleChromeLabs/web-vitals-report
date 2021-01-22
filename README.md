@@ -50,6 +50,12 @@ If a particular segment you're interested in looking at is not in the list, you 
 
 There is also an option to "use advanced options (configurable per account)". These options are useful if you've customized your `web-vitals` JS implementation (e.g. changed the [recommended](https://github.com/GoogleChrome/web-vitals/#send-the-results-to-google-analytics) event action or label values or the metric names). They also allow you to further filter the report (e.g. only events matching a particular [custom dimension](https://support.google.com/analytics/answer/2709828) value).
 
+#### Debug dimension
+
+Within the advance configuration options section is a field labelled "Debug dimension". This option can be used as an additional drill-down dimension to help identify and debug Web Vitals issues.
+
+You can set [any valid dimension](https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/) here, but typically this will be a [custom dimension](https://support.google.com/analytics/answer/2709829) in the form of `ga:dimensionXX` (were `XX` refers to the index of the dimension shown in the Google Analytics [Admin](https://support.google.com/analytics/answer/6132368) admin section under _Property Settings > Custom Definitions > Custom Dimensions_).
+
 #### Filter reference
 
 The syntax for specifying filters is based on the [format used in the Core Reporting API](https://developers.google.com/analytics/devguides/reporting/core/v3/reference#filters), with a few limitations:
