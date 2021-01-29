@@ -223,11 +223,11 @@ const app = (state, data) => {
           <div class="Form-subfield">
             <div class="Form-field">
               <label>Start date</label>
-              <input id="startDate" type="date" />
+              <input id="startDate" type="date" .value=${state.startDate} />
             </div>
             <div class="Form-field">
               <label>End date</label>
-              <input id="endDate" type="date" />
+              <input id="endDate" type="date" .value=${state.endDate} />
             </div>
           </div>` :
         null}
