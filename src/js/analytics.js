@@ -19,20 +19,32 @@
 import {getCLS, getFCP, getFID, getLCP} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
-const config = {
-  measurement_version: '3',
-  transport_type: 'beacon',
-  page_path: location.pathname,
-  debug_mode: location.hostname !== 'web-vitals-report.web.app',
-  custom_map: {
-    dimension1: 'measurement_version',
-    dimension2: 'client_id',
-    dimension3: 'segments',
-    dimension4: 'config',
-    dimension5: 'event_meta',
-    dimension6: 'event_debug',
-    metric1: 'report_size',
-  },
+const getConfig = (id) => {
+  const config = {
+    measurement_version: '4',
+    page_path: location.pathname,
+  };
+
+  if (id.startsWith('UA-')) {
+    Object.assign(config, {
+      transport_type: 'beacon',
+      custom_map: {
+        dimension1: 'measurement_version',
+        dimension2: 'client_id',
+        dimension3: 'segments',
+        dimension4: 'config',
+        dimension5: 'event_meta',
+        dimension6: 'event_debug',
+        metric1: 'report_size',
+      },
+    });
+  }
+  if (id.startsWith('G-')) {
+    if (location.hostname !== 'web-vitals-report.web.app') {
+      config.debug_mode = true;
+    }
+  }
+  return ['config', id, config];
 };
 
 const thresholds = {
@@ -149,7 +161,7 @@ function anonymizeConfig(state) {
 }
 
 export function measureReport({state, duration, report, error}) {
-  gtag('event', `report-${error ? 'error' : 'success'}`, {
+  gtag('event', `report_${error ? 'error' : 'success'}`, {
     value: duration,
     report_size: report ? report.rows.length : 0,
     segments: [
@@ -169,8 +181,8 @@ export function initAnalytics() {
   }
 
   gtag('js', new Date());
-  gtag('config', 'G-P1J6CQWJ4R', config);
-  gtag('config', 'UA-185052243-1', config);
+  gtag(...getConfig('G-P1J6CQWJ4R'));
+  gtag(...getConfig('UA-185052243-1'));
 
   measureWebVitals();
 }
