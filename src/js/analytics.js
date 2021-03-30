@@ -21,7 +21,7 @@ import {getSegmentNameById} from './api.js';
 
 const getConfig = (id) => {
   const config = {
-    measurement_version: '5',
+    measurement_version: '6',
     page_path: location.pathname,
   };
 
@@ -141,6 +141,8 @@ function handleMetric({name, value, delta, id, entries}) {
     value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     event_category: 'Web Vitals',
     event_label: id,
+    metric_value: value,
+    metric_delta: delta,
     metric_rating: getRating(value, thresholds[name]),
     non_interaction: true,
     ...getDebugInfo(name, entries),
