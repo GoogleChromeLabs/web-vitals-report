@@ -56,6 +56,8 @@ Within the advance configuration options section is a field labelled "Debug dime
 
 You can set [any valid dimension](https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/) here, but typically this will be a [custom dimension](https://support.google.com/analytics/answer/2709829) in the form of `ga:dimensionXX` (were `XX` refers to the index of the dimension shown in the Google Analytics [Admin](https://support.google.com/analytics/answer/6132368) admin section under _Property Settings > Custom Definitions > Custom Dimensions_).
 
+For details on what types of debug information is useful to capture, see: [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/)
+
 #### Filter reference
 
 The syntax for specifying filters is based on the [format used in the Core Reporting API](https://developers.google.com/analytics/devguides/reporting/core/v3/reference#filters), with a few limitations:

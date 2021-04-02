@@ -118,19 +118,19 @@ function getDebugInfo(name, entries = []) {
         event_time: firstEntry.startTime,
       };
     } else if (name === 'CLS') {
-      const largestShiftEntry = getLargestLayoutShiftEntry(entries);
-      if (largestShiftEntry && largestShiftEntry.sources) {
-        const source = getLargestLayoutShiftSource(largestShiftEntry.sources);
-        if (source) {
+      const largestEntry = getLargestLayoutShiftEntry(entries);
+      if (largestEntry && largestEntry.sources) {
+        const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
+        if (largestSource) {
           return {
-            debug_target: getSelector(source.node),
-            event_time: largestShiftEntry.startTime,
+            debug_target: getSelector(largestSource.node),
+            event_time: largestEntry.startTime,
           };
         }
       }
     }
   }
-  // Return default values in case there are no entries.
+  // Return default/empty params in case there are no entries.
   return {
     debug_target: '(not set)',
   };
