@@ -119,7 +119,7 @@ function getDebugInfo(name, entries = []) {
       };
     } else if (name === 'CLS') {
       const largestEntry = getLargestLayoutShiftEntry(entries);
-      if (largestEntry && largestEntry.sources) {
+      if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
         const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
         if (largestSource) {
           return {
