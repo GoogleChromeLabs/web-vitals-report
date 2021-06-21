@@ -211,7 +211,7 @@ function buildReportRequest(state, opts) {
     },
   ];
 
-  if (opts.filters) {
+  if (opts.active && opts.filters) {
     filters = filters.concat(parseFilters(opts.filters));
   }
 
