@@ -16,12 +16,12 @@
 
 /* global gtag */
 
-import {getCLS, getFCP, getFID, getLCP} from 'web-vitals';
+import {getCLS, getFCP, getFID, getLCP, getTTFB} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
 const getConfig = (id) => {
   const config = {
-    measurement_version: '6',
+    measurement_version: '7',
     page_path: location.pathname,
   };
 
@@ -53,6 +53,7 @@ const thresholds = {
   FCP: [1800, 3000],
   FID: [100, 300],
   LCP: [2500, 4000],
+  TTFB: [800, 1800],
 };
 
 function getRating(value, thresholds) {
@@ -137,7 +138,7 @@ function getDebugInfo(name, entries = []) {
 }
 
 function handleMetric({name, value, delta, id, entries}) {
-  gtag('event', name, {
+  const params = {
     value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     event_category: 'Web Vitals',
     event_label: id,
@@ -146,7 +147,20 @@ function handleMetric({name, value, delta, id, entries}) {
     metric_rating: getRating(value, thresholds[name]),
     non_interaction: true,
     ...getDebugInfo(name, entries),
-  });
+  };
+
+  if (name === 'TTFB' && entries.length) {
+    const navEntry = entries[0];
+    Object.assign(params, {
+      fetch_start: navEntry.fetchStart,
+      domain_lookup_start: navEntry.domainLookupStart,
+      connect_start: navEntry.connectStart,
+      request_start: navEntry.requestStart,
+      response_start: navEntry.responseStart,
+    });
+  }
+
+  gtag('event', name, params);
 }
 
 export function measureWebVitals() {
@@ -154,6 +168,7 @@ export function measureWebVitals() {
   getFCP(handleMetric);
   getFID(handleMetric);
   getLCP(handleMetric);
+  getTTFB(handleMetric);
 }
 
 function anonymizeSegment(id) {
