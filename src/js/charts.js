@@ -18,7 +18,6 @@
 
 import {e, round} from './utils.js';
 
-
 const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)'];
 
 function bucketValues(arrayOfValues, {maxValue, bucketSize = 10} = {}) {
@@ -60,7 +59,10 @@ function drawHistogram({
 
   const dimensionBuckets = {};
   for (const [dimension, values] of Object.entries(dimensionValues)) {
-    dimensionBuckets[dimension] = bucketValues(values, {maxValue, bucketSize});
+    dimensionBuckets[dimension] = bucketValues(values, {
+      maxValue,
+      bucketSize,
+    });
   }
 
   // Sort the dimensions to ensure series order is deterministic (otherwise
@@ -76,14 +78,18 @@ function drawHistogram({
   Highcharts.chart(container, {
     title: {text: `${metric} distribution`},
     colors: COLORS,
-    xAxis: [{
-      title: {text: 'Time (ms)'},
-      categories: allBuckets,
-      lineColor: '#9e9e9e',
-    }],
-    yAxis: [{
-      title: {text: 'Count'},
-    }],
+    xAxis: [
+      {
+        title: {text: 'Time (ms)'},
+        categories: allBuckets,
+        lineColor: '#9e9e9e',
+      },
+    ],
+    yAxis: [
+      {
+        title: {text: 'Count'},
+      },
+    ],
     plotOptions: {
       column: {
         grouping: false,
@@ -102,11 +108,16 @@ function drawTimeline(name, dateValues) {
 
   for (const [date, values] of Object.entries(dateValues)) {
     const timestamp = Date.UTC(
-        date.slice(0, 4), date.slice(4, 6) - 1, date.slice(6));
+      date.slice(0, 4),
+      date.slice(4, 6) - 1,
+      date.slice(6),
+    );
 
     for (const segmentName of Object.keys(values)) {
-      seriesObj[segmentName] =
-          seriesObj[segmentName] || {name: segmentName, data: []};
+      seriesObj[segmentName] = seriesObj[segmentName] || {
+        name: segmentName,
+        data: [],
+      };
 
       const segmentValues = values[segmentName];
       if (segmentValues.length > 8) {
@@ -136,9 +147,10 @@ function drawSummary(metric, segments) {
     html += `
     <span class="Report-metricSummaryItem">
       ${e(name)}
-      <span class="Score Score--alt Score--${score(metric, result)}">${
-        result
-      }</span>
+      <span class="Score Score--alt Score--${score(
+        metric,
+        result,
+      )}">${result}</span>
     </span>
   `;
   }
@@ -146,39 +158,58 @@ function drawSummary(metric, segments) {
   $el.innerHTML = html;
 }
 
-function drawTable(id, dimensionName, dimensionData) {
-  const metricNames = Object.keys(dimensionData[0][1]);
-  const segmentNames = Object.keys(dimensionData[0][1][metricNames[0]]);
-
+function drawTable(
+  id,
+  dimensionName,
+  dimensionData,
+  metricNames = ['CLS', 'LCP'],
+  segmentNames = ['Desktop Traffic', 'Mobile Traffic'],
+  numRows = 20,
+) {
   document.getElementById(id).innerHTML = `
     <thead>
       <tr>
         <th class="Table-dimension">${e(dimensionName)}</th>
         <th class="Table-segment">Segment</th>
-        ${metricNames.map((metric) => {
-          return `<th class="Table-metric">${e(metric)}</th>`;
-        }).join('')}
+        ${metricNames
+          .map((metric) => {
+            return `<th class="Table-metric">${e(metric)}</th>`;
+          })
+          .join('')}
       </tr>
     </thead>
     <tbody>
-      ${dimensionData.slice(0, 5).map(([dimension, values]) => {
-        return segmentNames.map((segment, i) => `<tr>
-          ${i === 0
-            ? `<td class="Table-dimension" rowspan="2">${e(dimension)}</td>`
-            : ''}
+      ${dimensionData
+        .slice(0, numRows)
+        .map(([dimension, values]) => {
+          return segmentNames
+            .map(
+              (segment, i) => `<tr>
+          ${
+            i === 0
+              ? `<td class="Table-dimension" rowspan="${
+                  segmentNames.length > 1 ? 2 : 1
+                }">${e(dimension)}</td>`
+              : ''
+          }
           <td class="Table-segment">${e(segment)}</td>
-          ${metricNames.map((metric) => {
-            const result = p75(values[metric][segment]);
-            return `
+          ${metricNames
+            .map((metric) => {
+              const result = p75(values[metric][segment]);
+              return `
               <td>
                 <div class="Score Score--${score(metric, result)}">
                   ${result}
                 </div>
               </td>
             `;
-          }).join('')}
-        </tr>`).join('');
-      }).join('')}
+            })
+            .join('')}
+        </tr>`,
+            )
+            .join('');
+        })
+        .join('')}  
     </tbody>
   `;
 }
@@ -193,15 +224,25 @@ function drawDebugInfo(pages) {
       </h3>
     </header>
 
-    ${pageEntries.length > 1 ? `<nav class="DebugNav">
+    ${
+      pageEntries.length > 1
+        ? `<nav class="DebugNav">
       <ul>
-        ${pageEntries.map(([path]) => `
+        ${pageEntries
+          .map(
+            ([path]) => `
           <li><a href="#${path}">${path}</a></li>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </ul>
-    </nav>` : ''}
+    </nav>`
+        : ''
+    }
 
-    ${pageEntries.map(([path, page]) => `
+    ${pageEntries
+      .map(
+        ([path, page]) => `
       <div class="Table">
       <table>
         <tr>
@@ -210,31 +251,35 @@ function drawDebugInfo(pages) {
           </th>
           <th class="Table-debugHeader" colspan="4" id="${path}">${path}</th>
         </tr>
-        ${['LCP', 'FID', 'CLS'].map((metric) => `
-          ${Object.keys(page[metric]).map((segment) => {
-            let debugEntries = page[metric][segment].debug;
-            if (debugEntries) {
-              debugEntries = [...Object.entries(debugEntries)]
-                  .sort((a, b) => b[1].length - a[1].length);
+        ${['LCP', 'CLS']
+          .map(
+            (metric) => `
+          ${Object.keys(page[metric])
+            .map((segment) => {
+              let debugEntries = page[metric][segment].debug;
+              if (debugEntries) {
+                debugEntries = [...Object.entries(debugEntries)].sort(
+                  (a, b) => b[1].length - a[1].length,
+                );
 
-              const importantEntries = [];
-              let otherValues = [];
-              const count = page[metric][segment].length;
+                const importantEntries = [];
+                let otherValues = [];
+                const count = page[metric][segment].length;
 
-              for (let i = 0; i < debugEntries.length; i++) {
-                const [id, values] = debugEntries[i];
-                if (i < 5 && values.length / count >= 0.02) {
-                  importantEntries.push([id, values]);
-                } else {
-                  otherValues = otherValues.concat(values);
+                for (let i = 0; i < debugEntries.length; i++) {
+                  const [id, values] = debugEntries[i];
+                  if (i < 5 && values.length / count >= 0.02) {
+                    importantEntries.push([id, values]);
+                  } else {
+                    otherValues = otherValues.concat(values);
+                  }
                 }
-              }
-              otherValues = otherValues.sort((a, b) => a - b);
+                otherValues = otherValues.sort((a, b) => a - b);
 
-              const totalRows =
+                const totalRows =
                   importantEntries.length + Math.min(1, otherValues.length);
 
-              return `
+                return `
                 <tr>
                   <th class="Table-debugMetricHeader">${metric}</th>
                   <th>Top debug identifiers</th>
@@ -243,15 +288,21 @@ function drawDebugInfo(pages) {
                   <th class="Table-metric">${metric}</th>
                 </tr>
 
-                ${importantEntries.map(([id, values], index) => `
+                ${importantEntries
+                  .map(
+                    ([id, values], index) => `
                   <tr>
-                    ${index === 0 ? `<td class="Table-debugSegment"
+                    ${
+                      index === 0
+                        ? `<td class="Table-debugSegment"
                       rowspan="${totalRows}">
                       <div class="Table-debugSpacer">${segment}</div>
-                    </td>` : ``}
+                    </td>`
+                        : ``
+                    }
                     <td>${id}</td>
                     <td class="Table-value">
-                      ${round(100 * values.length / count, 2)}%
+                      ${round((100 * values.length) / count, 2)}%
                     </td>
                     <td class="Table-value">${values.length}</td>
                     <td>
@@ -260,31 +311,44 @@ function drawDebugInfo(pages) {
                       </div>
                     </td>
                   </tr>
-                `).join('')}
-                ${otherValues.length ? `
+                `,
+                  )
+                  .join('')}
+                ${
+                  otherValues.length
+                    ? `
                   <tr>
                     <td><em>(other)</em></td>
                     <td class="Table-value">
-                      ${round(100 * otherValues.length / count, 2)}%
+                      ${round((100 * otherValues.length) / count, 2)}%
                     </td>
                     <td class="Table-value">${otherValues.length}</td>
                     <td>
-                      <div class="Score Score--${
-                        score(metric, p75(otherValues))}">
+                      <div class="Score Score--${score(
+                        metric,
+                        p75(otherValues),
+                      )}">
                         ${p75(otherValues)}
                       </div>
                     </td>
                   </tr>
-                `: ''}
+                `
+                    : ''
+                }
               `;
-            } else {
-              return '';
-            }
-          }).join('')}
-      `).join('')}
+              } else {
+                return '';
+              }
+            })
+            .join('')}
+      `,
+          )
+          .join('')}
       </table>
       </div>
-    `).join('')}
+    `,
+      )
+      .join('')}
   `;
 }
 
@@ -310,7 +374,7 @@ function score(metric, p75) {
 }
 
 function p(percentile, values) {
-  return values[Math.floor((values.length) * (percentile / 100))];
+  return values[Math.floor(values.length * (percentile / 100))];
 }
 
 function p75(values) {
@@ -322,6 +386,9 @@ function p75(values) {
 
 export function renderCharts(data, reportOpts) {
   for (const [name, metric] of Object.entries(data.metrics)) {
+    // We don't really care about FID or have a problem with it.
+    if (name === 'FID') continue;
+
     let maxValue;
     let bucketSize;
 
@@ -379,8 +446,66 @@ export function renderCharts(data, reportOpts) {
     drawTimeline(name, metric.dates);
   }
 
-  drawTable('countries', 'Country', [...Object.entries(data.countries)]);
-  drawTable('pages', 'Page', [...Object.entries(data.pages)]);
+  const tableData = [...Object.entries(data.pages)];
+
+  function formatAndSortTable(data, metricName, segmentName) {
+    const table = data.slice().filter(
+      (a) =>
+        !!p75(a[1][metricName][segmentName]) &&
+        p75(a[1][metricName][segmentName]) !== '-',
+    );
+
+    table
+      .sort((a, b) => {
+        const aVal = p75(a[1][metricName][segmentName]);
+        const bVal = p75(b[1][metricName][segmentName]);
+
+        return bVal - aVal;
+      });
+
+      return table;
+  }
+
+  // <--- DESKTOP
+  drawTable(
+    'worst-cls-desktop',
+    'URL',
+    formatAndSortTable(tableData, 'CLS', 'Desktop Traffic'),
+    ['CLS'],
+    ['Desktop Traffic'],
+    100,
+  );
+
+  drawTable(
+    'worst-lcp-desktop',
+    'URL',
+    formatAndSortTable(tableData, 'LCP', 'Desktop Traffic'),
+    ['LCP'],
+    ['Desktop Traffic'],
+    100,
+  );
+  // ----->
+
+  // <--- Mobile
+  drawTable(
+    'worst-cls-mobile',
+    'URL',
+    formatAndSortTable(tableData, 'CLS', 'Mobile Traffic'),
+    ['CLS'],
+    ['Mobile Traffic'],
+    100,
+  );
+
+  drawTable(
+    'worst-lcp-mobile',
+    'URL',
+    formatAndSortTable(tableData, 'LCP', 'Mobile Traffic'),
+    ['LCP'],
+    ['Mobile Traffic'],
+    100,
+  );
+
+  // ----->
 
   // Only render the debug table if a debug dimension is set in the options.
   if (reportOpts.active && reportOpts.debugDim) {

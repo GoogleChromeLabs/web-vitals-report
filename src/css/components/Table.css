@@ -18,6 +18,7 @@
 .Table {
   margin: 4em 0;
   overflow-x: auto;
+  margin-bottom: 64px;
 }
 
 .Table > table {

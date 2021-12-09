@@ -91,7 +91,7 @@
           <div id="timeline-LCP" class="Report-metricTimeline"></div>
         </div>
 
-        <div class="Report-metric">
+        <!-- <div class="Report-metric">
           <header class="Report-metricName">
             <h3 class="Report-metricShortname">FID</h3>
             <a href="https://web.dev/fid/" class="Report-metricFullname">
@@ -101,7 +101,7 @@
           <div id="summary-FID" class="Report-metricSummary"></div>
           <div id="histogram-FID" class="Report-metricHistogram"></div>
           <div id="timeline-FID" class="Report-metricTimeline"></div>
-        </div>
+        </div> -->
 
         <div class="Report-metric">
           <header class="Report-metricName">
@@ -121,10 +121,23 @@
         </header>
 
         <div class="Table">
-          <table id="countries"></table>
+          <h1> Worst CLS on Desktop </h1>
+          <table id="worst-cls-desktop"></table>
         </div>
+
         <div class="Table">
-          <table id="pages"></table>
+          <h1> Worst LCP on Desktop </h1>
+          <table id="worst-lcp-desktop"></table>
+        </div>
+
+        <div class="Table">
+          <h1> Worst CLS on Mobile </h1>
+          <table id="worst-cls-mobile"></table>
+        </div>
+
+        <div class="Table">
+          <h1> Worst LCP on Mobile </h1>
+          <table id="worst-lcp-mobile"></table>
         </div>
 
         <div id="debug"></div>
