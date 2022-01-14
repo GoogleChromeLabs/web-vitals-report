@@ -16,7 +16,7 @@
 
 import {openDB} from 'idb';
 import {getAccessToken} from './auth.js';
-import {Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
+import {dateOffset, Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
 import {WebVitalsError} from './WebVitalsError.js';
 
 
@@ -26,6 +26,8 @@ const MANAGEMENT_API_URL =
 const REPORTING_API_URL =
     'https://analyticsreporting.googleapis.com/v4/reports:batchGet';
 
+
+const cacheableRows = new WeakSet();
 
 function getAuthHeaders() {
   return {
@@ -185,6 +187,24 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
   const segmentDimensionIndex =
       reportRequest.dimensions.findIndex((dim) => dim.name === 'ga:segment');
 
+  const {startDate, endDate} = reportRequest.dateRanges[0];
+
+  // If the report request is a multi-date range containing yesterday or
+  // today, split it up since this report data will likely not be "golden".
+  const yesterday = dateOffset(-1);
+  const today = dateOffset(0);
+  if (endDate != startDate && startDate < yesterday && endDate >= yesterday) {
+    let dateRanges = [
+      {startDate: startDate, endDate: dateOffset(-2)},
+      {startDate: yesterday, endDate: yesterday},
+    ];
+    // If the date range includes the current day, request that separately.
+    if (endDate >= today) {
+      dateRanges.push({startDate: today, endDate: endDate});
+    }
+    return await getReportRowsByDatesFromAPI(reportRequest, dateRanges);
+  }
+
   do {
     report = await makeReportingAPIRequest(reportRequest);
 
@@ -194,7 +214,6 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
     // contains a million rows, try to break it up by requesting individual
     // dates.
     if (totalRows >= 1e6) {
-      const {startDate, endDate} = reportRequest.dateRanges[0];
       if (startDate !== endDate) {
         const dateRanges = getDatesInRange(startDate, endDate).map((date) => {
           return {startDate: date, endDate: date};
@@ -223,25 +242,29 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
     }
   } while (report.nextPageToken);
 
-  // If the report contains sampled data, Google Analytics will automatically
-  // adjust all metric values by the sample rate. In most cases, this is what
-  // you want (e.g. if you're reporting total values), but since we're going
-  // to be constructing a distribution from these values, we want to the
-  // original values as sent.
   const {samplesReadCounts, samplingSpaceSizes} = report.data;
-  if (samplesReadCounts) {
-    const sampleRate = samplesReadCounts[0] / samplingSpaceSizes[0];
-    for (const row of rows) {
+  const sampleRate = samplesReadCounts && (samplesReadCounts[0] / samplingSpaceSizes[0]);
+
+  for (const row of rows) {
+    // If the data in the report is "golden", mark all rows as cacheable.
+    if (report.data.isDataGolden) {
+      cacheableRows.add(row);
+    }
+
+    // If the report contains sampled data, Google Analytics will automatically
+    // adjust all metric values by the sample rate. In most cases, this is what
+    // you want (e.g. if you're reporting total values), but since we're going
+    // to be constructing a distribution from these values, we want to the
+    // original values as sent.
+    if (sampleRate) {
       const value = row.metrics[0].values[0];
       row.metrics[0].values[0] = `${Math.round(value * sampleRate)}`;
     }
-  }
 
-  // The Reporting API will return the segment name, which is problematic
-  // since we're going to be caching the data by segment, and users can change
-  // the segment name in GA. Instead, use the segment ID.
-  if (segmentDimensionIndex > -1) {
-    for (const row of rows) {
+    // The Reporting API will return the segment name, which is problematic
+    // since we're going to be caching the data by segment, and users can change
+    // the segment name in GA. Instead, use the segment ID.
+    if (segmentDimensionIndex > -1) {
       const segmentId = getSegmentIdByName(
           row.dimensions[segmentDimensionIndex], reportRequest);
 
@@ -262,11 +285,18 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 
-const dbPromise = openDB('web-vitals-cache', 1, {
-  upgrade(db) {
-    db.createObjectStore('data', {
-      keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
-    });
+const dbPromise = openDB('web-vitals-cache', 2, {
+  async upgrade(db, oldVersion, newVersion, transaction) {
+    if (oldVersion === 0) {
+      db.createObjectStore('data', {
+        keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
+      });
+    }
+    if (oldVersion === 1) {
+      // Due to a bug in v1, clear all data in the object store
+      // because it could be incorrect in some cases.
+      await transaction.objectStore('data').clear();
+    }
   },
 });
 
@@ -292,6 +322,11 @@ async function getCachedData(viewId, segmentId, optsHash, startDate, endDate) {
 async function updateCachedData(viewId, optsHash, rows) {
   const dateData = new Map();
   for (const row of rows) {
+    // Only cache rows from reports with "golden" data.
+    if (!cacheableRows.has(row)) {
+      continue;
+    }
+
     const [segmentId, date] = row.dimensions;
 
     let segmentData = dateData.get(date);
@@ -312,13 +347,16 @@ async function updateCachedData(viewId, optsHash, rows) {
   const db = await getDB();
   for (const [date, segmentData] of dateData) {
     for (const [segmentId, rows] of segmentData) {
-      await db.put('data', {
-        viewId,
-        segmentId,
-        optsHash,
-        date: toISODate(date),
-        json: JSON.stringify(rows),
-      });
+      // An empty set of rows should never exist, but just in case...
+      if (rows.length) {
+        await db.put('data', {
+          viewId,
+          segmentId,
+          optsHash,
+          date: toISODate(date),
+          json: JSON.stringify(rows),
+        });
+      }
     }
   }
 }
