@@ -164,7 +164,8 @@ async function onSubmit(event) {
     await windowLoaded;
 
     const reportState = getState();
-    const reportOpts = validateOpts(reportState[`opts:${reportState.viewId}`]);
+    const viewOpts = reportState[`opts:${reportState.viewId}`];
+    const reportOpts = validateOpts(viewOpts.active ? viewOpts : {});
 
     const results = await Promise.all([
       getWebVitalsData(reportState, reportOpts),

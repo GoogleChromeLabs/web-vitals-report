@@ -18,19 +18,6 @@ import {getReport, getSegmentNameById} from './api.js';
 import {WebVitalsError} from './WebVitalsError.js';
 
 
-export function getDefaultOpts() {
-  return {
-    active: false,
-    metricNameDim: 'ga:eventAction',
-    metricIdDim: 'ga:eventLabel',
-    lcpName: 'LCP',
-    fidName: 'FID',
-    clsName: 'CLS',
-    filters: '',
-  };
-}
-
-
 export async function getWebVitalsData(state, opts) {
   const reportRequest = buildReportRequest(state, opts);
   const {rows, meta} = await getReport(reportRequest);
@@ -218,6 +205,7 @@ function buildReportRequest(state, opts) {
   return {
     viewId,
     pageSize: 100000,
+    // samplingLevel: 'SMALL',
     includeEmptyRows: true,
     dateRanges: [{startDate, endDate}],
     segments: [
