@@ -33,6 +33,13 @@
   display: none;
 }
 
+.Report-sampleWarning {
+  border: 1px solid hsla(45, 100%, 50%, 0.15);
+  background: hsla(45, 100%, 50%, 0.15);
+  padding: 1em;
+  margin: 1em;
+}
+
 .Report-heading {
   color: #777;
   font-size: 0.9em;

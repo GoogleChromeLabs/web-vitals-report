@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {getReport, getSegmentNameById} from './api.js';
+import {getReport, getSegmentNameById, PAGE_SIZE} from './api.js';
 import {WebVitalsError} from './WebVitalsError.js';
 
 
@@ -204,7 +204,7 @@ function buildReportRequest(state, opts) {
 
   return {
     viewId,
-    pageSize: 100000,
+    pageSize: PAGE_SIZE,
     // samplingLevel: 'SMALL',
     includeEmptyRows: true,
     dateRanges: [{startDate, endDate}],

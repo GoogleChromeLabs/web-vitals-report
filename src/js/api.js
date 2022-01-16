@@ -16,6 +16,8 @@
 
 import {openDB} from 'idb';
 import {getAccessToken} from './auth.js';
+import {progress} from './Progress.js';
+import {get} from './store.js';
 import {dateOffset, Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
 import {WebVitalsError} from './WebVitalsError.js';
 
@@ -26,6 +28,8 @@ const MANAGEMENT_API_URL =
 const REPORTING_API_URL =
     'https://analyticsreporting.googleapis.com/v4/reports:batchGet';
 
+
+export const PAGE_SIZE = 100000;
 
 const cacheableRows = new WeakSet();
 
@@ -112,15 +116,44 @@ function getSegmentIdByName(segmentName, reportRequest) {
   return null;
 }
 
-export function getReport(reportRequest, onProgress) {
-  // Use the cache-aware API function if available, otherwise use the
-  // standard API request function without caching.
-  if (typeof getReportFromCacheAndAPI === 'function') {
-    return getReportFromCacheAndAPI(reportRequest, onProgress);
-  }
-  return getReportFromAPI(reportRequest, onProgress);
-}
+class SamplingError extends Error {}
 
+
+let originalReportRequest;
+let originalStartDate;
+let originalEndDate;
+
+export async function getReport(reportRequest) {
+  originalReportRequest = reportRequest;
+  originalStartDate = reportRequest.dateRanges[0].startDate;
+  originalEndDate = reportRequest.dateRanges[0].endDate;
+
+  let controller = new AbortController();
+
+  try {
+    // Sampled responses are never stored in the cached, so for sampled
+    // requests there's no need to check there first.
+    if (reportRequest.samplingLevel !== 'SMALL') {
+      return await getReportFromCacheAndAPI(reportRequest, controller);
+    }
+    return await getReportFromAPI(reportRequest, controller);
+  } catch (error) {
+    if (error instanceof SamplingError) {
+      const sampledReportRequest =
+          JSON.parse(JSON.stringify(originalReportRequest));
+
+      // Create a new controller for this new report.
+      controller = new AbortController();
+
+      sampledReportRequest.samplingLevel = 'SMALL';
+
+      return await getReportFromAPI(sampledReportRequest, controller);
+    } else {
+      // Rethrow all errors that are not sampling errors.
+      throw error;
+    }
+  }
+}
 
 // Technically it's 10, but we're making it lower just to be safe and account
 // for requests from other tools happening at the same time.
@@ -150,7 +183,7 @@ function concurrentRequestsCountLessThanMax() {
   return deferred.promise;
 }
 
-export async function makeReportingAPIRequest(reportRequest) {
+export async function makeReportingAPIRequest(reportRequest, signal) {
   try {
     incrementConcurrentRequests();
     await concurrentRequestsCountLessThanMax();
@@ -161,6 +194,7 @@ export async function makeReportingAPIRequest(reportRequest) {
       body: JSON.stringify({
         reportRequests: [reportRequest],
       }),
+      signal,
     });
 
     const json = await response.json();
@@ -173,14 +207,14 @@ export async function makeReportingAPIRequest(reportRequest) {
   }
 }
 
-export async function getReportFromAPI(reportRequest, onProgress) {
-  const rows = await getReportRowsFromAPI(reportRequest, onProgress);
+export async function getReportFromAPI(reportRequest, controller) {
+  const rows = await getReportRowsFromAPI(reportRequest, controller);
+  const isSampled = reportRequest.samplingLevel === 'SMALL';
   const source = sourcesNameMap[sources.NETWORK];
-  return {rows, meta: {source}};
+  return {rows, meta: {source, isSampled}};
 }
 
-async function getReportRowsFromAPI(reportRequest, onProgress) {
-  let totalRows;
+async function getReportRowsFromAPI(reportRequest, controller) {
   let report;
   let rows = [];
 
@@ -188,66 +222,122 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
       reportRequest.dimensions.findIndex((dim) => dim.name === 'ga:segment');
 
   const {startDate, endDate} = reportRequest.dateRanges[0];
+  const datesInRange = getDatesInRange(startDate, endDate);
 
-  // If the report request is a multi-date range containing yesterday or
-  // today, split it up since this report data will likely not be "golden".
-  const yesterday = dateOffset(-1);
-  const today = dateOffset(0);
-  if (endDate != startDate && startDate < yesterday && endDate >= yesterday) {
-    let dateRanges = [
-      {startDate: startDate, endDate: dateOffset(-2)},
-      {startDate: yesterday, endDate: yesterday},
-    ];
-    // If the date range includes the current day, request that separately.
-    if (endDate >= today) {
-      dateRanges.push({startDate: today, endDate: endDate});
+  // For non-sampled, multi-day requests that contain today or yesterday,
+  // split it up since this report data will likely not be "golden".
+  if (endDate != startDate && reportRequest.samplingLevel !== 'SMALL') {
+    const yesterday = dateOffset(-1);
+    const today = dateOffset(0);
+    if (startDate < yesterday && endDate >= yesterday) {
+      const dateRanges = [
+        {startDate: startDate, endDate: dateOffset(-2)},
+        {startDate: yesterday, endDate: yesterday},
+      ];
+      // If the date range includes the current day, request that separately.
+      if (endDate >= today) {
+        dateRanges.push({startDate: today, endDate: endDate});
+      }
+      return await getReportRowsByDatesFromAPI(
+          reportRequest, dateRanges, controller);
     }
-    return await getReportRowsByDatesFromAPI(reportRequest, dateRanges);
   }
 
-  do {
-    report = await makeReportingAPIRequest(reportRequest);
+  progress.total += datesInRange.length;
 
-    totalRows = report.data.rowCount;
+  try {
+    report = await makeReportingAPIRequest(reportRequest, controller.signal);
+  } catch (error) {
+    // If there is an error, abort all in-progress requests for this report.
+    controller.abort();
 
-    // Reports will be truncated after a million rows, so if this report
-    // contains a million rows, try to break it up by requesting individual
-    // dates.
-    if (totalRows >= 1e6) {
-      if (startDate !== endDate) {
-        const dateRanges = getDatesInRange(startDate, endDate).map((date) => {
-          return {startDate: date, endDate: date};
-        });
-        return await getReportRowsByDatesFromAPI(reportRequest, dateRanges);
-      } else {
-        throw new WebVitalsError('row_limit_exceeded');
-      }
+    // Rethrow the error unless it's an AbortError.
+    if (error.name !== 'AbortError') {
+      throw error;
     }
+  }
 
-    if (report.data.rows) {
-      rows = rows.concat(report.data.rows);
-    }
-
-    if (onProgress) {
-      const abort = await onProgress({rows, totalRows});
-      if (abort) {
-        return;
-      }
-    }
-
-    if (report.nextPageToken) {
-      // Clone the request before modifying it.
-      reportRequest = JSON.parse(JSON.stringify(reportRequest));
-      reportRequest.pageToken = report.nextPageToken;
-    }
-  } while (report.nextPageToken);
+  const totalRows = report.data.rowCount;
 
   const {samplesReadCounts, samplingSpaceSizes} = report.data;
-  const sampleRate = samplesReadCounts && (samplesReadCounts[0] / samplingSpaceSizes[0]);
+  const sampleRate = samplesReadCounts &&
+      (samplesReadCounts[0] / samplingSpaceSizes[0]);
+
+  // True if the report is sampled at all.
+  const isSampled = Boolean(sampleRate);
+
+  // True if the report is sampled for a request
+  // that didn't specifically ask for sampled results.
+  const isAutoSampled = isSampled && reportRequest.samplingLevel !== 'SMALL';
+
+  // If the report is a multi-day report that contains sampled data or more
+  // than a million rows, trying breaking it up into one report for each day.
+  if (startDate !== endDate && (isAutoSampled || totalRows >= 1e6)) {
+    // Deduct the dates in range from the progress total because they're not
+    // going to be used. Defer this action to ensure the percentage can
+    // increase at a stable rate.
+    setTimeout(() => progress.total -= datesInRange.length, 0);
+
+    const dateRanges = datesInRange.map((d) => ({startDate: d, endDate: d}));
+    return await getReportRowsByDatesFromAPI(
+        reportRequest, dateRanges, controller);
+  }
+
+  // If this is a single-day request that's part of a larger report and
+  // the results are sampled, throw an error because we can't mixed sample
+  // data from one data with sampled data from another day.
+  if (isAutoSampled && startDate === endDate &&
+      originalStartDate !== originalEndDate) {
+    progress.total -= datesInRange.length;
+    controller.abort();
+    throw new SamplingError();
+  }
+
+  // If the response still contains more than 1M rows (even after a retry),
+  // throw an error because Google Analytics will truncate all responses
+  // with than 1M rows, making the data useless.
+  if (totalRows >= 1e6) {
+    throw new WebVitalsError('row_limit_exceeded');
+  }
+
+  if (report.data.rows) {
+    rows = rows.concat(report.data.rows);
+  }
+
+  // Queue adding the completed requests to progress until after any
+  // paginated requests start.
+  setTimeout(() => progress.cur += datesInRange.length, 0);
+
+  // If the response shows a paginated report, fetch the rest in parallel.
+  if (report.nextPageToken) {
+    let rowCount = rows && rows.length || 0;
+    const reportRequests = [];
+    while (rowCount < totalRows) {
+      const nextReportRequest = JSON.parse(JSON.stringify(reportRequest));
+      nextReportRequest.pageToken = String(rowCount);
+      reportRequests.push(nextReportRequest);
+      rowCount += PAGE_SIZE;
+    }
+
+    progress.total += reportRequests.length;
+
+    const pageResults = await Promise.all(reportRequests.map((req) => {
+      return makeReportingAPIRequest(req).then((result) => {
+        progress.cur++;
+        return result;
+      });
+    }));
+
+    for (const page of pageResults) {
+      if (page.data.rows) {
+        rows = rows.concat(page.data.rows);
+      }
+    }
+  }
 
   for (const row of rows) {
-    // If the data in the report is "golden", mark all rows as cacheable.
-    if (report.data.isDataGolden) {
+    // If the data in the report is "golden" and not sampled, mark it cacheable.
+    if (report.data.isDataGolden && !isSampled) {
       cacheableRows.add(row);
     }
 
@@ -256,7 +346,7 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
     // you want (e.g. if you're reporting total values), but since we're going
     // to be constructing a distribution from these values, we want to the
     // original values as sent.
-    if (sampleRate) {
+    if (isSampled) {
       const value = row.metrics[0].values[0];
       row.metrics[0].values[0] = `${Math.round(value * sampleRate)}`;
     }
@@ -275,27 +365,19 @@ async function getReportRowsFromAPI(reportRequest, onProgress) {
   return rows;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-// NOTE: everything below this line deals with caching request data for
-// faster subsequent requests, as well as breaking up large requests for
-// better sampling rates and to avoid hitting the 1 million unique row limit.
-// For sites that send less than a million Web Vitals events per month, this
-// code is largely not necessary and can be deleted.
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-
-const dbPromise = openDB('web-vitals-cache', 2, {
+const dbPromise = openDB('web-vitals-cache', 3, {
   async upgrade(db, oldVersion, newVersion, transaction) {
-    if (oldVersion === 0) {
-      db.createObjectStore('data', {
-        keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
-      });
-    }
-    if (oldVersion === 1) {
-      // Due to a bug in v1, clear all data in the object store
-      // because it could be incorrect in some cases.
-      await transaction.objectStore('data').clear();
+    switch (oldVersion) {
+      case 0:
+        db.createObjectStore('data', {
+          keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
+        });
+        break;
+      case 1:
+      case 2:
+        // Due to bugs in v1-2, clear all data in the object store
+        // because it could be incorrect in some cases.
+        await transaction.objectStore('data').clear();
     }
   },
 });
@@ -304,19 +386,13 @@ function getDB() {
   return dbPromise;
 }
 
-async function getCachedData(viewId, segmentId, optsHash, startDate, endDate) {
+async function getCacheKeys(viewId, segmentId, optsHash, startDate, endDate) {
   const db = await getDB();
   const range = IDBKeyRange.bound(
     [viewId, segmentId, optsHash, startDate],
     [viewId, segmentId, optsHash, endDate],
   );
-  const results = await db.getAll('data', range);
-
-  const cachedData = {};
-  for (const {date, json} of results) {
-    cachedData[date] = JSON.parse(json);
-  }
-  return cachedData;
+  return await db.getAllKeys('data', range);
 }
 
 async function updateCachedData(viewId, optsHash, rows) {
@@ -361,7 +437,87 @@ async function updateCachedData(viewId, optsHash, rows) {
   }
 }
 
-function getMissingRanges(reportRequest, cachedData) {
+const sources = {
+  CACHE: 1,
+  NETWORK: 2,
+  MIXED: 3,
+};
+
+const sourcesNameMap = Object.fromEntries(
+    Object.entries(sources).map(([k, v]) => [v, k.toLowerCase()]));
+
+async function getReportFromCacheAndAPI(reportRequest, controller) {
+  const {viewId, segments, dimensions, dimensionFilterClauses} = reportRequest;
+  const {startDate, endDate} = reportRequest.dateRanges[0];
+  const optsHash = await hashObj({dimensions, dimensionFilterClauses});
+
+  const foundKeys = await Promise.all(segments.map(({segmentId}) => {
+    return getCacheKeys(
+        viewId, segmentId.slice(6), optsHash, startDate, endDate);
+  }));
+
+  let usableKeys = [];
+  const cachedDates = {};
+  for (const key of foundKeys.flat()) {
+    const date = key[3];
+    cachedDates[date] = cachedDates[date] || [];
+    cachedDates[date].push(key);
+
+    // If there's a cache key for all needed segments, they are usable.
+    if (cachedDates[date].length === segments.length) {
+      usableKeys = usableKeys.concat(cachedDates[date]);
+    }
+  }
+
+  let missingRanges = getMissingRanges(reportRequest, cachedDates);
+
+  // If the average number of rows per day from the previous report for this
+  // view is > 100,000 then just start off by requesting per-day data.
+  const {avgRowsPerDay} = get(`meta:${viewId}`);
+  if (avgRowsPerDay > 1e5) {
+    let perDayMissingRanges = [];
+    for (const {startDate, endDate} of missingRanges) {
+      const datesInRange = getDatesInRange(startDate, endDate);
+      perDayMissingRanges = perDayMissingRanges.concat(
+          datesInRange.map((d) => ({startDate: d, endDate: d})));
+    }
+    missingRanges = perDayMissingRanges;
+  }
+
+  const [networkReport, cachedReport] = await Promise.all([
+    getReportRowsByDatesFromAPI(reportRequest, missingRanges, controller),
+    getCachedData(usableKeys),
+  ]);
+
+  const rows = mergeReportRows(cachedReport, networkReport);
+  const source = sourcesNameMap[
+      (missingRanges.length ? sources.NETWORK : 0) +
+      (cachedReport.length ? sources.CACHE : 0)];
+
+  // Don't await.
+  updateCachedData(viewId, optsHash, networkReport);
+
+  return {rows, meta: {source}};
+}
+
+async function getCachedData(usableKeys) {
+  // Start by populating the report with all available cached data
+  // for the segments and dates specified.
+  let cachedReport = [];
+
+  progress.total += usableKeys.length;
+
+  const db = await getDB();
+  await Promise.all(usableKeys.map((key) => {
+    return db.get('data', key).then((value) => {
+      cachedReport = mergeReportRows(cachedReport, JSON.parse(value.json));
+      progress.cur++;
+    });
+  }));
+  return cachedReport;
+}
+
+function getMissingRanges(reportRequest, cacheDates = {}) {
   const {startDate, endDate} = reportRequest.dateRanges[0];
 
   const missingRanges = [];
@@ -369,7 +525,8 @@ function getMissingRanges(reportRequest, cachedData) {
   let missingRangeEnd;
 
   getDatesInRange(startDate, endDate).forEach((date, i, range) => {
-    const missingDateData = !cachedData.every((s) => s[date]);
+    const missingDateData =
+        cacheDates[date]?.length !== reportRequest.segments.length;
 
     if (missingDateData) {
       if (!missingRangeStart) {
@@ -377,6 +534,7 @@ function getMissingRanges(reportRequest, cachedData) {
       }
       missingRangeEnd = date;
     }
+
     if (!missingDateData || i === range.length - 1) {
       if (missingRangeStart && missingRangeEnd) {
         missingRanges.push({
@@ -390,57 +548,14 @@ function getMissingRanges(reportRequest, cachedData) {
   return missingRanges;
 }
 
-const sources = {
-  CACHE: 1,
-  NETWORK: 2,
-  MIXED: 3,
-};
-
-const sourcesNameMap = Object.fromEntries(
-    Object.entries(sources).map(([k, v]) => [v, k.toLowerCase()]));
-
-async function getReportFromCacheAndAPI(reportRequest) {
-  const {viewId, segments, dimensions, dimensionFilterClauses} = reportRequest;
-  const {startDate, endDate} = reportRequest.dateRanges[0];
-  const optsHash = await hashObj({dimensions, dimensionFilterClauses});
-
-  // Start by populating the report with all available cached data
-  // for the segments and dates specified.
-  const cachedData = await Promise.all(segments.map(({segmentId}) => {
-    return getCachedData(
-        viewId, segmentId.slice(6), optsHash, startDate, endDate);
-  }));
-
-  let cachedReport = [];
-  for (const segment of cachedData) {
-    for (const rows of Object.values(segment)) {
-      cachedReport = mergeReportRows(cachedReport, rows);
-    }
-  }
-
-  const missingRangesFromCache = getMissingRanges(reportRequest, cachedData);
-
-  const networkReport =
-    await getReportRowsByDatesFromAPI(reportRequest, missingRangesFromCache);
-
-  // Don't await.
-  updateCachedData(viewId, optsHash, networkReport);
-
-  const rows = mergeReportRows(cachedReport, networkReport);
-  const source = sourcesNameMap[
-      (missingRangesFromCache.length ? sources.NETWORK : 0) +
-      (cachedReport.length ? sources.CACHE : 0)];
-
-  return {rows, meta: {source}};
-}
-
-async function getReportRowsByDatesFromAPI(reportRequest, dateRanges) {
+async function getReportRowsByDatesFromAPI(
+    reportRequest, dateRanges, controller) {
   const rows = await Promise.all(
     dateRanges.map(async (dateRange) => {
       const newReportRequest =
           getReportRequestForDates(reportRequest, dateRange);
 
-      return await getReportRowsFromAPI(newReportRequest);
+      return await getReportRowsFromAPI(newReportRequest, controller);
     }),
   );
 

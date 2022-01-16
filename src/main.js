@@ -21,8 +21,10 @@ import {getAccountSummaries, getSegments} from './js/api.js';
 import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './js/auth.js';
 import {renderCharts} from './js/charts.js';
 import {getWebVitalsData} from './js/data.js';
+import {progress} from './js/Progress.js';
 import {initState, getState, setState, addChangeListener} from './js/state.js';
-import {dateOffset, nextFrame, timeout} from './js/utils.js';
+import {set} from './js/store.js';
+import {dateOffset, getDatesInRange, nextFrame, round, timeout} from './js/utils.js';
 
 
 const windowLoaded = new Promise((resolve) => {
@@ -154,18 +156,20 @@ async function onSubmit(event) {
     onDateRangeChange(dateRange);
   }
 
+  const reportState = getState();
+  const viewOpts = reportState[`opts:${reportState.viewId}`];
+  const reportOpts = validateOpts(viewOpts.active ? viewOpts : {});
   const startTime = performance.now();
+
   let report;
   let error;
+
   try {
-    setState({isFetchingData: true});
+    setState({isFetchingData: true, progress: ''});
+    progress.init(() => setState({progress: `(${progress.percentage}%)`}));
 
     // Ensure the Highcharts library (loaded async) is ready.
     await windowLoaded;
-
-    const reportState = getState();
-    const viewOpts = reportState[`opts:${reportState.viewId}`];
-    const reportOpts = validateOpts(viewOpts.active ? viewOpts : {});
 
     const results = await Promise.all([
       getWebVitalsData(reportState, reportOpts),
@@ -174,7 +178,7 @@ async function onSubmit(event) {
       timeout(300),
     ]);
     report = results[0];
-    renderCharts(report.data, reportOpts);
+    renderCharts(report, reportOpts);
   } catch (requestError) {
     console.error(requestError);
     addAlert(requestError);
@@ -187,6 +191,15 @@ async function onSubmit(event) {
       report,
       error,
     });
+
+    // Persist the average number of rows per day in the report. This is
+    // used to determine whether subsequent reports should start off being
+    // broken up by day.
+    const {startDate, endDate, viewId} = reportState;
+    const avgRowsPerDay = round(
+        report.rows.length / getDatesInRange(startDate, endDate).length, 0);
+
+    set(`meta:${viewId}`, {avgRowsPerDay});
   }
 }
 
@@ -324,7 +337,7 @@ const app = (state, data) => {
 
       <div class="Form-action">
         <button class="Button" .disabled=${state.isFetchingData}>
-          ${state.isFetchingData ? 'Loading...' : 'Submit'}
+          ${state.isFetchingData ? `Loading... ${state.progress}` : 'Submit'}
         </button>
       </di>
     </form>
