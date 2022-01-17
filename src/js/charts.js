@@ -126,6 +126,19 @@ function drawTimeline(name, dateValues) {
   });
 }
 
+function drawWarnings(isSampled) {
+  document.getElementById('report-warnings').innerHTML =  isSampled ? `
+    <aside class="Report-sampleWarning">
+      <strong><i>⚠️</i> Warning:</strong>
+      This report is based on a sample of the full user base.
+      <a target="_blank"
+        href="https://support.google.com/analytics/answer/2637192">
+        Learn more.
+      </a>
+    </aside>
+  ` : ``;
+}
+
 function drawSummary(metric, segments) {
   const $el = document.getElementById(`summary-${metric}`);
   let html = ``;
@@ -320,7 +333,11 @@ function p75(values) {
   return '-'; // Insufficient data
 }
 
-export function renderCharts(data, reportOpts) {
+export function renderCharts(report, reportOpts) {
+  const {data, meta} = report;
+
+  drawWarnings(meta.isSampled);
+
   for (const [name, metric] of Object.entries(data.metrics)) {
     let maxValue;
     let bucketSize;

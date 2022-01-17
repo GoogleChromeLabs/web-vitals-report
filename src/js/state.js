@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
+import {get, set} from './store.js';
+
 let state = {};
 const listenerMap = new Map();
 
 export function initState(initializer) {
-  let storedState = {};
-  try {
-    storedState = JSON.parse(localStorage.getItem('state'));
-  } catch (error) {
-    // Do nothing.
-  }
-  Object.assign(state, initializer(storedState));
-
-  document.addEventListener('visibilitychange', () => {
-    localStorage.setItem('state', JSON.stringify(state));
-  });
-
+  Object.assign(state, get('state'));
+  document.addEventListener('visibilitychange', () => set('state', state));
   return state;
 }
 

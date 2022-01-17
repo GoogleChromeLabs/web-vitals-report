@@ -21,7 +21,7 @@ import {getSegmentNameById} from './api.js';
 
 const getConfig = (id) => {
   const config = {
-    measurement_version: '7',
+    measurement_version: '8',
     page_path: location.pathname,
   };
 
@@ -204,6 +204,7 @@ export function measureReport({state, duration, report, error}) {
     event_category: 'Usage',
     event_label: error ? (error.code || error.message) : '(not set)',
     report_source: report ? report.meta.source : '(not set)',
+    report_sampled: Boolean(report && report.meta.isSampled),
   });
 }
 
