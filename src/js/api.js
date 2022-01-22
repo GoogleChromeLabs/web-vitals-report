@@ -15,6 +15,7 @@
  */
 
 import {openDB} from 'idb';
+import {measureCaughtError} from './analytics.js';
 import {getAccessToken} from './auth.js';
 import {progress} from './Progress.js';
 import {get} from './store.js';
@@ -118,6 +119,12 @@ function getSegmentIdByName(segmentName, reportRequest) {
 
 class SamplingError extends Error {}
 
+class CacheReadError extends Error {
+  constructor(error) {
+    super(error.message);
+    this.originalError = error;
+  }
+}
 
 let originalReportRequest;
 let originalStartDate;
@@ -134,7 +141,17 @@ export async function getReport(reportRequest) {
     // Sampled responses are never stored in the cached, so for sampled
     // requests there's no need to check there first.
     if (reportRequest.samplingLevel !== 'SMALL') {
-      return await getReportFromCacheAndAPI(reportRequest, controller);
+      // If any errors are thrown getting
+      try {
+        return await getReportFromCacheAndAPI(reportRequest, controller);
+      }
+      catch (error) {
+        if (error instanceof CacheReadError) {
+          handleDBError(error.originalError);
+        } else {
+          throw error;
+        }
+      }
     }
     return await getReportFromAPI(reportRequest, controller);
   } catch (error) {
@@ -365,25 +382,45 @@ async function getReportRowsFromAPI(reportRequest, controller) {
   return rows;
 }
 
-const dbPromise = openDB('web-vitals-cache', 3, {
-  async upgrade(db, oldVersion, newVersion, transaction) {
-    switch (oldVersion) {
-      case 0:
-        db.createObjectStore('data', {
-          keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
-        });
-        break;
-      case 1:
-      case 2:
-        // Due to bugs in v1-2, clear all data in the object store
-        // because it could be incorrect in some cases.
-        await transaction.objectStore('data').clear();
-    }
-  },
-});
+let dbPromise;
+addEventListener('pageshow', () => dbPromise = getDB());
+addEventListener('pagehide', () => dbPromise.then((db) => db && db.close()));
 
 function getDB() {
+  if (!dbPromise) {
+    dbPromise = openDB('web-vitals-cache', 3, {
+      async upgrade(db, oldVersion, newVersion, transaction) {
+        switch (oldVersion) {
+          case 0:
+            db.createObjectStore('data', {
+              keyPath: ['viewId', 'segmentId', 'optsHash', 'date'],
+            });
+            break;
+          case 1:
+          case 2:
+            // Due to bugs in v1-2, clear all data in the object store
+            // because it could be incorrect in some cases.
+            await transaction.objectStore('data').clear();
+        }
+      },
+      async blocking() {
+        if (dbPromise) {
+          const db = await dbPromise;
+          db.close();
+          dbPromise = null;
+        }
+      }
+    });
+  }
   return dbPromise;
+}
+
+async function handleDBError(error) {
+  measureCaughtError(error);
+  if (dbPromise) {
+    const db = await dbPromise;
+    await db.clear('data');
+  }
 }
 
 async function getCacheKeys(viewId, segmentId, optsHash, startDate, endDate) {
@@ -451,10 +488,15 @@ async function getReportFromCacheAndAPI(reportRequest, controller) {
   const {startDate, endDate} = reportRequest.dateRanges[0];
   const optsHash = await hashObj({dimensions, dimensionFilterClauses});
 
-  const foundKeys = await Promise.all(segments.map(({segmentId}) => {
-    return getCacheKeys(
-        viewId, segmentId.slice(6), optsHash, startDate, endDate);
-  }));
+  let foundKeys = [];
+  try {
+    foundKeys = await Promise.all(segments.map(({segmentId}) => {
+      return getCacheKeys(
+          viewId, segmentId.slice(6), optsHash, startDate, endDate);
+    }));
+  } catch (error) {
+    handleDBError(error);
+  }
 
   let usableKeys = [];
   const cachedDates = {};
@@ -495,7 +537,7 @@ async function getReportFromCacheAndAPI(reportRequest, controller) {
       (cachedReport.length ? sources.CACHE : 0)];
 
   // Don't await.
-  updateCachedData(viewId, optsHash, networkReport);
+  updateCachedData(viewId, optsHash, networkReport).catch(handleDBError);
 
   return {rows, meta: {source}};
 }
@@ -504,16 +546,23 @@ async function getCachedData(usableKeys) {
   // Start by populating the report with all available cached data
   // for the segments and dates specified.
   let cachedReport = [];
+  let didError = false;
 
-  progress.total += usableKeys.length;
-
-  const db = await getDB();
-  await Promise.all(usableKeys.map((key) => {
-    return db.get('data', key).then((value) => {
-      cachedReport = mergeReportRows(cachedReport, JSON.parse(value.json));
-      progress.cur++;
-    });
-  }));
+  try {
+    progress.total += usableKeys.length;
+    const db = await getDB();
+    await Promise.all(usableKeys.map((key, i) => {
+      return db.get('data', key).then((value) => {
+        progress.cur++;
+        if (!didError) {
+          cachedReport = mergeReportRows(cachedReport, JSON.parse(value.json));
+        }
+      });
+    }));
+  } catch (error) {
+    didError = true;
+    throw new CacheReadError(error);
+  }
   return cachedReport;
 }
 
