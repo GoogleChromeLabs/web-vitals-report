@@ -208,6 +208,13 @@ export function measureReport({state, duration, report, error}) {
   });
 }
 
+export function measureCaughtError(error) {
+  gtag('event', 'caught_error', {
+    event_category: 'Usage',
+    event_label: error.stack || error.toString(),
+  });
+}
+
 export function initAnalytics() {
   if (location.hostname !== 'web-vitals-report.web.app') {
     window.gtag = console.log;

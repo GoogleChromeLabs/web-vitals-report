@@ -20,7 +20,7 @@ let state = {};
 const listenerMap = new Map();
 
 export function initState(initializer) {
-  Object.assign(state, get('state'));
+  Object.assign(state, initializer(get('state')));
   document.addEventListener('visibilitychange', () => set('state', state));
   return state;
 }
