@@ -158,7 +158,7 @@ async function onSubmit(event) {
 
   const reportState = getState();
   const viewOpts = reportState[`opts:${reportState.viewId}`];
-  const reportOpts = validateOpts(viewOpts.active ? viewOpts : {});
+  const reportOpts = validateOpts(viewOpts && viewOpts.active ? viewOpts : {});
   const startTime = performance.now();
 
   let report;
