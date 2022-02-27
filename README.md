@@ -127,7 +127,7 @@ Before you can run the app locally, you'll need to create your own OAuth 2.0 cre
 3. [Create a new project](https://cloud.google.com/apis/docs/getting-started#creating_a_google_project) in the Google Cloud Console and [enable](https://cloud.google.com/apis/docs/getting-started) the following APIs:
     i. [Google Analytics API](https://console.cloud.google.com/apis/api/analytics.googleapis.com/overview)
     ii. [Analytics Reporting API](https://console.cloud.google.com/apis/api/analyticsreporting.googleapis.com/overview)
-4. [Set up OAuth 2.0](https://support.google.com/cloud/answer/6158849) in your new project and create a client ID and make sure to add `localhost:4040` to the list of Authorised JavaScript origins.
+4. [Set up OAuth 2.0](https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow#creatingcred) in your new project and create a client ID and make sure to add `localhost:4040` to the list of Authorized JavaScript origins.
 5. In your clone of the `web-vitals-report` repo, replace the client IDs in the [`oauth.config.json`](/firebase.json) file with the client ID you just created. (The file contains separate client IDs for dev and prod builds, but it's OK to use the same client ID for both, as long as all authorized domains are correctly configured).
 
 Once you have your own client ID, you can run the app locally:
