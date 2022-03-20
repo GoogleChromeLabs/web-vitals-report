@@ -284,7 +284,7 @@ const app = (state, data) => {
               </select>
             </div>
             <div class="Form-field">
-              <label>Third segment</label>
+              <label>Third segment (optional)</label>
               <select id="segmentC">
                 <option value="">None</option>
                 ${data.segmentOpts ? html`
@@ -298,7 +298,7 @@ const app = (state, data) => {
               </select>
             </div>
             <div class="Form-field">
-              <label>Forth segment</label>
+              <label>Fourth segment (optional)</label>
               <select id="segmentD">
                 <option value="">None</option>
                 ${data.segmentOpts ? html`
