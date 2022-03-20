@@ -39,15 +39,17 @@ export async function getWebVitalsData(state, opts) {
       [getSegmentNameById(segmentIdA)]: getDefaultValue(),
       [getSegmentNameById(segmentIdB)]: getDefaultValue(),
     }
+    
     // As Segments C and D are optional they may not exist
-    const segmentIdC = reportRequest.segments.length > 2 ? reportRequest.segments[2].segmentId.slice(6) : null;
-    if (segmentIdC) {
+    if (reportRequest.segments.length > 2) {
+      const segmentIdC = reportRequest.segments[2].segmentId.slice(6);
       retValue[getSegmentNameById(segmentIdC)] = getDefaultValue()
     }
-    const segmentIdD = reportRequest.segments.length > 3 ? reportRequest.segments[3].segmentId.slice(6) : null;
-    if (segmentIdD) {
+    if (reportRequest.segments.length > 3) {
+      const segmentIdD = reportRequest.segments[3].segmentId.slice(6);
       retValue[getSegmentNameById(segmentIdD)] = getDefaultValue()
     }
+    
     return retValue;
   };
 
