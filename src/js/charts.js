@@ -177,7 +177,7 @@ function drawTable(id, dimensionName, dimensionData) {
       ${dimensionData.slice(0, 5).map(([dimension, values]) => {
         return segmentNames.map((segment, i) => `<tr>
           ${i === 0
-            ? `<td class="Table-dimension" rowspan="2">${e(dimension)}</td>`
+            ? `<td class="Table-dimension" rowspan="${segmentNames.length}">${e(dimension)}</td>`
             : ''}
           <td class="Table-segment">${e(segment)}</td>
           ${metricNames.map((metric) => {
