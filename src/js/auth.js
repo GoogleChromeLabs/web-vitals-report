@@ -55,12 +55,14 @@ export async function refreshAccessToken() {
 }
 
 export async function checkAuthStatus() {
-  // This is set on the window in `index.html`.
+  // This is set by the google.accounts.oauth2.initTokenClient callback
   await window.tokenPromise;
   return !!getAccessToken();
 }
 
-// Can only be called if the user is signed in.
+// Should only be called if the user is signed in
+// but even if it's blank or invalid, the API call will fail
+// and then authentication screen will be shown again.
 export function getAccessToken() {
   return accessToken;
 }
