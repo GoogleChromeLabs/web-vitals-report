@@ -1,8 +1,7 @@
 {
   "client_ids": {
-    "production": "779765851627-uugqpgtbjdqdngli00bkft94v9n3uv65.apps.googleusercontent.com",
-    "development": "779765851627-uugqpgtbjdqdngli00bkft94v9n3uv65.apps.googleusercontent.com"
+    "production": "668260105875-k5udm157fprqc7hv5blh9q8qmpmbotq5.apps.googleusercontent.com",
+    "development": "566344118954-s9j707p5q8a3vpivqrdl6vugk6rb5t16.apps.googleusercontent.com"
   },
   "scope": "https://www.googleapis.com/auth/analytics.readonly"
 }
-
