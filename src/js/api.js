@@ -144,8 +144,7 @@ export async function getReport(reportRequest) {
       // If any errors are thrown getting
       try {
         return await getReportFromCacheAndAPI(reportRequest, controller);
-      }
-      catch (error) {
+      } catch (error) {
         if (error instanceof CacheReadError) {
           handleDBError(error.originalError);
         } else {
@@ -216,7 +215,7 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
 
     const json = await response.json();
     if (!response.ok) {
-      if (json.error.code = 401) {
+      if (json.error.code === 401) {
         refreshAccessToken();
       } else {
         throw new Error(`${json.error.code}: ${json.error.message}`);
@@ -271,8 +270,6 @@ async function getReportRowsFromAPI(reportRequest, controller) {
   } catch (error) {
     // If there is an error, abort all in-progress requests for this report.
     controller.abort();
-
-    console.error('BARRY', error)
 
     // Rethrow the error unless it's an AbortError.
     if (error.name !== 'AbortError') {
@@ -415,7 +412,7 @@ function getDB() {
           db.close();
           dbPromise = null;
         }
-      }
+      },
     });
   }
   return dbPromise;

@@ -127,7 +127,7 @@ function drawTimeline(name, dateValues) {
 }
 
 function drawWarnings(isSampled) {
-  document.getElementById('report-warnings').innerHTML =  isSampled ? `
+  document.getElementById('report-warnings').innerHTML = isSampled ? `
     <aside class="Report-sampleWarning">
       <strong><i>⚠️</i> Warning:</strong>
       This report is based on a sample of the full user base.

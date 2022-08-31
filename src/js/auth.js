@@ -23,20 +23,19 @@ window.tokenPromise = new Promise((resolve, reject) => {
 });
 
 let tokenClient;
-let access_token;
+let accessToken;
 
-const client_id = window.client_id;
+const clientId = window.clientId;
 const scope = window.scope;
 
 export async function initAuthClient() {
-
   tokenClient = window.google.accounts.oauth2.initTokenClient({
-      client_id: client_id,
+      client_id: clientId,
       scope: scope,
       callback: (tokenResponse) => {
-        access_token = tokenResponse.access_token;
-        tokenLoadOkay();
-      }
+        accessToken = tokenResponse.access_token;
+        window.tokenLoadOkay();
+      },
   });
   tokenClient.requestAccessToken();
 }
@@ -46,23 +45,22 @@ export async function initAuth() {
 }
 
 export async function signoutAccessToken() {
-  google.accounts.oauth2.revoke(access_token);
-  access_token = null;
+  window.google.accounts.oauth2.revoke(accessToken);
+  accessToken = null;
 }
 
 export async function refreshAccessToken() {
   tokenClient.requestAccessToken();
-  return access_token;
+  return accessToken;
 }
 
 export async function checkAuthStatus() {
   // This is set on the window in `index.html`.
-  await tokenPromise;
+  await window.tokenPromise;
   return !!getAccessToken();
-
 }
 
 // Can only be called if the user is signed in.
 export function getAccessToken() {
-  return access_token;
+  return accessToken;
 }
