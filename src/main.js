@@ -1,5 +1,5 @@
 /*
-* Copyright 2020 Google LLC
+* Copyright 2022 Google LLC
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {html, render} from 'lit-html';
 import {addAlert} from './js/alerts.js';
 import {initAnalytics, measureReport} from './js/analytics.js';
 import {getAccountSummaries, getSegments} from './js/api.js';
-import {checkAuthStatus, getAuthInstance, onSignInChange, userIsSignedIn} from './js/auth.js';
+import {checkAuthStatus, initAuth, signoutAccessToken, getAccessToken, refreshAccessToken} from './js/auth.js';
 import {renderCharts} from './js/charts.js';
 import {getWebVitalsData} from './js/data.js';
 import {progress} from './js/Progress.js';
@@ -359,7 +359,7 @@ function queueRender() {
   }
 }
 
-function handleSignInChange(isSignedIn) {
+function toggleButton(isSignedIn) {
   const signInToggle = document.getElementById('signin-toggle');
   const toggle = isSignedIn ? 'Out' : 'In';
   const classes = ['isSignedIn', 'isSignedOut'];
@@ -371,14 +371,26 @@ function handleSignInChange(isSignedIn) {
   signInToggle.textContent = `Sign ${toggle}`;
   document.body.classList.add(classes[0]);
   document.body.classList.remove(classes[1]);
+}
+
+function handleSignInChange(isSignedIn) {
+  const signInToggle = document.getElementById('signin-toggle');
+  toggleButton(isSignedIn);
 
   signInToggle.onclick = () => {
-    getAuthInstance()[`sign${toggle}`]();
+    if (getAccessToken()) {
+      signoutAccessToken();
+      toggleButton(false);
+    } else {
+      refreshAccessToken();
+      toggleButton(true);
+    }
   };
 }
 
 async function init() {
   initAnalytics();
+  initAuth();
 
   const isSignedIn = await checkAuthStatus();
   handleSignInChange(isSignedIn);
@@ -400,7 +412,6 @@ async function init() {
   addChangeListener('isFetchingData', onIsFetchingDataChange);
   addChangeListener('*', queueRender);
 
-  onSignInChange(handleSignInChange);
   onDateRangeChange(state.dateRange);
   onSegmentsRecommendedChange(state.segmentsRecommended);
 
@@ -409,7 +420,6 @@ async function init() {
   await nextFrame();
   document.body.classList.add('isReady');
 
-  await userIsSignedIn();
   await Promise.all([
     initViewOpts(),
     initSegmentOpts(),

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright 2020 Google LLC
+  Copyright 2022 Google LLC
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -67,11 +67,6 @@
     <div class="Container">
       <div class="AuthLayer">
         <div id="app" class="AuthLayer-signedIn"></div>
-        <div class="AuthLayer-signedOut">
-          <div class="SignIn">
-            <div id="google-signin2"></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -163,21 +158,12 @@
       </g>
     </defs>
   </svg>
-  <script type="module">
-    window.authorizeUser = new Promise((resolve, reject) => {
-      window.onGApiLoad = () => {
-        gapi.load('auth2', () => {
-          const config = {
-            client_id: '{{ client_id }}',
-            scope: '{{ scope }}',
-          }
-          gapi.auth2.init(config).then(resolve, reject);
-        });
-      };
-    });
+  <script>
+    window.client_id = '{{ client_id }}';
+    window.scope = '{{ scope }}';
   </script>
   <script type="module" src="./main.js"></script>
-  <script defer src="https://apis.google.com/js/platform.js?onload=onGApiLoad"></script>
+  <script defer id="gis" src="https://accounts.google.com/gsi/client"></script>
   <script defer src="https://code.highcharts.com/highcharts.js"></script>
   <script defer src="https://www.googletagmanager.com/gtag/js?id=G-P1J6CQWJ4R"></script>
   <script>

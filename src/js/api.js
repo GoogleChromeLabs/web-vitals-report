@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {openDB} from 'idb';
 import {measureCaughtError} from './analytics.js';
-import {getAccessToken} from './auth.js';
+import {getAccessToken, refreshAccessToken} from './auth.js';
 import {progress} from './Progress.js';
 import {get} from './store.js';
 import {dateOffset, Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
@@ -216,7 +216,11 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
 
     const json = await response.json();
     if (!response.ok) {
-      throw new Error(`${json.error.code}: ${json.error.message}`);
+      if (json.error.code = 401) {
+        refreshAccessToken();
+      } else {
+        throw new Error(`${json.error.code}: ${json.error.message}`);
+      }
     }
     return json.reports[0];
   } finally {
@@ -267,6 +271,8 @@ async function getReportRowsFromAPI(reportRequest, controller) {
   } catch (error) {
     // If there is an error, abort all in-progress requests for this report.
     controller.abort();
+
+    console.error('BARRY', error)
 
     // Rethrow the error unless it's an AbortError.
     if (error.name !== 'AbortError') {
