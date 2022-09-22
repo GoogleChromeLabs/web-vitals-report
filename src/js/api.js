@@ -68,6 +68,10 @@ export async function getSegments() {
   if (!segments) {
     segments = await makeManagementAPIRequest('segments');
 
+    if (!segments || !segments[0]) {
+      return;
+    }
+
     for (const segment of segments) {
       // Rename the "Desktop and Tablet Traffic" segment to "Desktop Traffic"
       // for consistency with CrUX and PSI.

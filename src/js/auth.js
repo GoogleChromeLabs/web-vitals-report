@@ -17,11 +17,6 @@
 // Utility methods for dealing with Google auth:
 // https://developers.google.com/identity/oauth2/web/guides/use-token-model
 
-window.tokenPromise = new Promise((resolve, reject) => {
-  window.tokenLoadOkay = resolve;
-  window.tokenLoadFail = reject;
-});
-
 let tokenClient;
 let accessToken;
 
@@ -31,14 +26,9 @@ export async function initAuthClient() {
       scope: window.scope,
       callback: (tokenResponse) => {
         accessToken = tokenResponse.access_token;
-        window.tokenLoadOkay();
       },
   });
   tokenClient.requestAccessToken();
-}
-
-export async function initAuth() {
-  document.getElementById('gis').addEventListener('load', initAuthClient);
 }
 
 export async function signoutAccessToken() {
@@ -53,7 +43,6 @@ export async function refreshAccessToken() {
 
 export async function checkAuthStatus() {
   // This is set by the google.accounts.oauth2.initTokenClient callback
-  await window.tokenPromise;
   return !!getAccessToken();
 }
 

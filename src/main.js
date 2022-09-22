@@ -18,7 +18,7 @@ import {html, render} from 'lit-html';
 import {addAlert} from './js/alerts.js';
 import {initAnalytics, measureReport} from './js/analytics.js';
 import {getAccountSummaries, getSegments} from './js/api.js';
-import {checkAuthStatus, initAuth, signoutAccessToken, getAccessToken, refreshAccessToken} from './js/auth.js';
+import {checkAuthStatus, initAuthClient, signoutAccessToken, getAccessToken, refreshAccessToken} from './js/auth.js';
 import {renderCharts} from './js/charts.js';
 import {getWebVitalsData} from './js/data.js';
 import {progress} from './js/Progress.js';
@@ -67,6 +67,9 @@ async function initViewOpts() {
   const viewOpts = {};
   const accountSummaries = await getAccountSummaries();
 
+  if (!accountSummaries || !accountSummaries[0]) {
+    return;
+  }
   for (const {name: accountName, webProperties} of accountSummaries) {
     if (webProperties) {
       for (const {name: propertyName, profiles} of webProperties) {
@@ -99,6 +102,9 @@ async function initSegmentOpts() {
     'CUSTOM': [],
   };
   const segments = await getSegments();
+  if (!segments || !segments[0]) {
+    return;
+  }
   for (const {type, name, id} of segments) {
     segmentOpts[type].push([id, name]);
   }
@@ -382,6 +388,7 @@ function handleSignInChange(isSignedIn) {
       signoutAccessToken();
       toggleButton(false);
     } else {
+      initAuthClient();
       refreshAccessToken();
       toggleButton(true);
     }
@@ -390,11 +397,8 @@ function handleSignInChange(isSignedIn) {
 
 async function init() {
   initAnalytics();
-  initAuth();
 
-  const isSignedIn = await checkAuthStatus();
-  handleSignInChange(isSignedIn);
-
+  handleSignInChange(false);
   const state = initState((storedState) => {
     const defaultState = {
       dateRange: 7,
@@ -402,7 +406,7 @@ async function init() {
     };
     const loadState = {
       isFetchingData: false,
-      isSignedIn,
+      isSignedIn: false,
     };
     return Object.assign(defaultState, storedState, loadState);
   });
@@ -420,10 +424,10 @@ async function init() {
   await nextFrame();
   document.body.classList.add('isReady');
 
-  await Promise.all([
-    initViewOpts(),
-    initSegmentOpts(),
-  ]);
+  // await Promise.all([
+  //   initViewOpts(),
+  //   initSegmentOpts(),
+  // ]);
 }
 
 // Initialize the page.
