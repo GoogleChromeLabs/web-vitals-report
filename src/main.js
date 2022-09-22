@@ -394,14 +394,14 @@ function handleSignInChange(isSignedIn) {
       signoutAccessToken();
       toggleButton(false);
     } else {
-      initAuthClient(refreshDropDowns);
+      initAuthClient(renderLoggedInApp);
       refreshAccessToken();
       toggleButton(true);
     }
   };
   const signInWithGoogleButton = document.getElementById('google-signin2');
   signInWithGoogleButton.onclick = () => {
-    initAuthClient(refreshDropDowns);
+    initAuthClient(renderLoggedInApp);
     refreshAccessToken();
     toggleButton(true);
   };
@@ -409,7 +409,8 @@ function handleSignInChange(isSignedIn) {
 
 }
 
-async function refreshDropDowns() {
+async function renderLoggedInApp() {
+  renderApp();
   await Promise.all([
     initViewOpts(),
     initSegmentOpts(),
@@ -442,13 +443,11 @@ async function init() {
   onDateRangeChange(state.dateRange);
   onSegmentsRecommendedChange(state.segmentsRecommended);
 
-  renderApp();
-
   await nextFrame();
   document.body.classList.add('isReady');
 
   if (isSignedIn) {
-    await refreshDropDowns();
+    await renderLoggedInApp();
   }
 
 }
