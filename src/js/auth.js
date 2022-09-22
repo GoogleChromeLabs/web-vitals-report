@@ -25,13 +25,10 @@ window.tokenPromise = new Promise((resolve, reject) => {
 let tokenClient;
 let accessToken;
 
-const clientId = window.clientId;
-const scope = window.scope;
-
 export async function initAuthClient() {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: scope,
+      client_id: window.clientId,
+      scope: window.scope,
       callback: (tokenResponse) => {
         accessToken = tokenResponse.access_token;
         window.tokenLoadOkay();
@@ -51,7 +48,7 @@ export async function signoutAccessToken() {
 
 export async function refreshAccessToken() {
   tokenClient.requestAccessToken();
-  return accessToken;
+  return getAccessToken();;
 }
 
 export async function checkAuthStatus() {
