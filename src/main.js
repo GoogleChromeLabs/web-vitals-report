@@ -106,9 +106,6 @@ async function initSegmentOpts() {
     'CUSTOM': [],
   };
   const segments = await getSegments();
-  if (!segments || !segments[0]) {
-    return;
-  }
   for (const {type, name, id} of segments) {
     segmentOpts[type].push([id, name]);
   }
