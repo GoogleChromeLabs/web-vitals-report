@@ -32,8 +32,7 @@ If you have not completed this step, you'll get an error when trying to create a
 
 ### Step 1: _(authorize)_
 
-Navigate to [web-vitals-report.web.app](https://web-vitals-report.web.app) and you will
-be requested to sign in with a Google Account. **Check for pop-up blockers as this signin request will launch in another window and is easily missed!** The sign-in flow will prompt you for permission to allow the app to view your Google Analytics data, which is needed in order to create the report.
+Navigate to [web-vitals-report.web.app](https://web-vitals-report.web.app) and click Sign In in the top right and you will be requested to sign in with a Google Account. The sign-in flow will prompt you for permission to allow the app to view your Google Analytics data, which is needed in order to create the report.
 
 ### Step 2: _(configure)_
 
