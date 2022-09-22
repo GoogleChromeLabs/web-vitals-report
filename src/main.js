@@ -399,6 +399,14 @@ function handleSignInChange(isSignedIn) {
       toggleButton(true);
     }
   };
+  const signInWithGoogleButton = document.getElementById('google-signin2');
+  signInWithGoogleButton.onclick = () => {
+    initAuthClient(refreshDropDowns);
+    refreshAccessToken();
+    toggleButton(true);
+  };
+
+
 }
 
 async function refreshDropDowns() {
