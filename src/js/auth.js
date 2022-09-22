@@ -20,29 +20,33 @@
 let tokenClient;
 let accessToken;
 
-export async function initAuthClient() {
+export async function initAuthClient(postAuthFunction) {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: window.clientId,
       scope: window.scope,
       callback: (tokenResponse) => {
         accessToken = tokenResponse.access_token;
+        // store token in sessionStorage for page reloads
+        sessionStorage.setItem("access_token", accessToken);
+        postAuthFunction();
       },
   });
-  tokenClient.requestAccessToken();
 }
 
 export async function signoutAccessToken() {
   window.google.accounts.oauth2.revoke(accessToken);
   accessToken = null;
+  sessionStorage.removeItem("access_token");
 }
 
 export async function refreshAccessToken() {
   tokenClient.requestAccessToken();
+  // store token in sessionStorage for page reloads
+  sessionStorage.setItem("access_token", accessToken);
   return getAccessToken();;
 }
 
 export async function checkAuthStatus() {
-  // This is set by the google.accounts.oauth2.initTokenClient callback
   return !!getAccessToken();
 }
 
@@ -50,5 +54,10 @@ export async function checkAuthStatus() {
 // but even if it's blank or invalid, the API call will fail
 // and then authentication screen will be shown again.
 export function getAccessToken() {
+
+  // If token is not set, then check sessionStorage (in case of page reloads)
+  if (!accessToken) {
+    accessToken = sessionStorage.getItem("access_token");
+  }
   return accessToken;
 }

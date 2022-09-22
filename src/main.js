@@ -68,6 +68,10 @@ async function initViewOpts() {
   const accountSummaries = await getAccountSummaries();
 
   if (!accountSummaries || !accountSummaries[0]) {
+    // Getting accounts failed, so must have become signed out.
+    // e.g. if access_token is expired.
+    signoutAccessToken();
+    toggleButton(false);
     return;
   }
   for (const {name: accountName, webProperties} of accountSummaries) {
@@ -388,17 +392,26 @@ function handleSignInChange(isSignedIn) {
       signoutAccessToken();
       toggleButton(false);
     } else {
-      initAuthClient();
+      initAuthClient(refreshDropDowns);
       refreshAccessToken();
       toggleButton(true);
     }
   };
 }
 
+async function refreshDropDowns() {
+  await Promise.all([
+    initViewOpts(),
+    initSegmentOpts(),
+  ]);
+}
+
 async function init() {
   initAnalytics();
 
-  handleSignInChange(false);
+  const isSignedIn = await checkAuthStatus();
+  handleSignInChange(isSignedIn);
+
   const state = initState((storedState) => {
     const defaultState = {
       dateRange: 7,
@@ -406,7 +419,7 @@ async function init() {
     };
     const loadState = {
       isFetchingData: false,
-      isSignedIn: false,
+      isSignedIn,
     };
     return Object.assign(defaultState, storedState, loadState);
   });
@@ -424,10 +437,10 @@ async function init() {
   await nextFrame();
   document.body.classList.add('isReady');
 
-  // await Promise.all([
-  //   initViewOpts(),
-  //   initSegmentOpts(),
-  // ]);
+  if (isSignedIn) {
+    await refreshDropDowns();
+  }
+
 }
 
 // Initialize the page.
