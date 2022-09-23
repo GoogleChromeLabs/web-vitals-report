@@ -208,7 +208,7 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
     incrementConcurrentRequests();
     await concurrentRequestsCountLessThanMax();
 
-    const response = await fetch(REPORTING_API_URL, {
+    let response = await fetch(REPORTING_API_URL, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -217,13 +217,25 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
       signal,
     });
 
-    const json = await response.json();
-    if (!response.ok) {
-      if (json.error.code === 401) {
+    let json = await response.json();
+
+    // If it fails with auth error, then try a refresh and a second attempt
+    if (!response.ok && json.error.code === 401) {
         refreshAccessToken();
-      } else {
+        response = await fetch(REPORTING_API_URL, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            reportRequests: [reportRequest],
+          }),
+          signal,
+        });
+
+        json = await response.json();
+    }
+
+    if (!response.ok) {
         throw new Error(`${json.error.code}: ${json.error.message}`);
-      }
     }
     return json.reports[0];
   } finally {
