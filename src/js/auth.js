@@ -24,7 +24,6 @@ export async function initAuthClient(postAuthFunction) {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: window.clientId,
       scope: window.scope,
-      consent: '',
       callback: (tokenResponse) => {
         accessToken = tokenResponse.access_token;
         // store token in sessionStorage for page reloads
