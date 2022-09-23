@@ -39,7 +39,7 @@ export async function signoutAccessToken() {
 }
 
 export async function refreshAccessToken() {
-  tokenClient.requestAccessToken();
+  await tokenClient.requestAccessToken();
   // store token in sessionStorage for page reloads
   sessionStorage.setItem("access_token", accessToken);
   return getAccessToken();;

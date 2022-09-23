@@ -221,7 +221,7 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
 
     // If it fails with auth error, then try a refresh and a second attempt
     if (!response.ok && json.error.code === 401) {
-        refreshAccessToken();
+        await refreshAccessToken();
         response = await fetch(REPORTING_API_URL, {
           method: 'POST',
           headers: getAuthHeaders(),
