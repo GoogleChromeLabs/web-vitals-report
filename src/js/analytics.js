@@ -16,7 +16,7 @@
 
 /* global gtag */
 
-import {getCLS, getFCP, getFID, getLCP, getTTFB} from 'web-vitals';
+import {onCLS, onFCP, onFID, onLCP, onINP, onTTFB} from 'web-vitals';
 import {getSegmentNameById} from './api.js';
 
 const getConfig = (id) => {
@@ -53,6 +53,7 @@ const thresholds = {
   FCP: [1800, 3000],
   FID: [100, 300],
   LCP: [2500, 4000],
+  INP: [200, 500],
   TTFB: [800, 1800],
 };
 
@@ -100,6 +101,11 @@ function wasFIDBeforeDCL(fidEntry) {
   return navEntry && fidEntry.startTime < navEntry.domContentLoadedEventStart;
 }
 
+function wasINPBeforeDCL(inpEntry) {
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  return navEntry && inpEntry.startTime < navEntry.domContentLoadedEventStart;
+}
+
 function getDebugInfo(name, entries = []) {
   // In some cases there won't be any entries (e.g. if CLS is 0,
   // or for LCP after a bfcache restore), so we have to check first.
@@ -129,6 +135,14 @@ function getDebugInfo(name, entries = []) {
           };
         }
       }
+    } else if (name === 'INP') {
+      const firstEntry = entries[0];
+      return {
+        debug_target: getSelector(firstEntry.target),
+        debug_event: firstEntry.name,
+        debug_timing: wasINPBeforeDCL(firstEntry) ? 'pre_dcl' : 'post_dcl',
+        event_time: firstEntry.startTime,
+      };
     }
   }
   // Return default/empty params in case there are no entries.
@@ -163,12 +177,13 @@ function handleMetric({name, value, delta, id, entries}) {
   gtag('event', name, params);
 }
 
-export function measureWebVitals() {
-  getCLS(handleMetric);
-  getFCP(handleMetric);
-  getFID(handleMetric);
-  getLCP(handleMetric);
-  getTTFB(handleMetric);
+function measureWebVitals() {
+  onCLS(handleMetric);
+  onFCP(handleMetric);
+  onFID(handleMetric);
+  onLCP(handleMetric);
+  onINP(handleMetric);
+  onTTFB(handleMetric);
 }
 
 function anonymizeSegment(id) {
