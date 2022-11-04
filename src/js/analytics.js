@@ -107,7 +107,7 @@ function getDebugInfo(name, attribution) {
       };
     }
   }
-  // Return default/empty params in case there are no attribution.
+  // Return default/empty params in case there was no attribution data set.
   return {
     debug_target: '(not set)',
   };
