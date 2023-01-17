@@ -144,8 +144,7 @@ export async function getReport(reportRequest) {
       // If any errors are thrown getting
       try {
         return await getReportFromCacheAndAPI(reportRequest, controller);
-      }
-      catch (error) {
+      } catch (error) {
         if (error instanceof CacheReadError) {
           handleDBError(error.originalError);
         } else {
@@ -409,7 +408,7 @@ function getDB() {
           db.close();
           dbPromise = null;
         }
-      }
+      },
     });
   }
   return dbPromise;

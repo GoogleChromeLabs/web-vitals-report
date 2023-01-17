@@ -127,7 +127,7 @@ function drawTimeline(name, dateValues) {
 }
 
 function drawWarnings(isSampled) {
-  document.getElementById('report-warnings').innerHTML =  isSampled ? `
+  document.getElementById('report-warnings').innerHTML = isSampled ? `
     <aside class="Report-sampleWarning">
       <strong><i>⚠️</i> Warning:</strong>
       This report is based on a sample of the full user base.
@@ -177,7 +177,8 @@ function drawTable(id, dimensionName, dimensionData) {
       ${dimensionData.slice(0, 5).map(([dimension, values]) => {
         return segmentNames.map((segment, i) => `<tr>
           ${i === 0
-            ? `<td class="Table-dimension" rowspan="${segmentNames.length}">${e(dimension)}</td>`
+            ? '<td class="Table-dimension"' +
+              ` rowspan="${segmentNames.length}">${e(dimension)}</td>`
             : ''}
           <td class="Table-segment">${e(segment)}</td>
           ${metricNames.map((metric) => {

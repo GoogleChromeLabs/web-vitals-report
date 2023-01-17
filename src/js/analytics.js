@@ -69,12 +69,16 @@ function getRating(value, thresholds) {
 
 function wasFIDBeforeDCL(fidEntry) {
   const navEntry = performance.getEntriesByType('navigation')[0];
-  return navEntry && fidEntry && fidEntry.startTime < navEntry.domContentLoadedEventStart;
+  return navEntry
+    && fidEntry
+    && fidEntry.startTime < navEntry.domContentLoadedEventStart;
 }
 
 function wasINPBeforeDCL(inpEntry) {
   const navEntry = performance.getEntriesByType('navigation')[0];
-  return navEntry && inpEntry && inpEntry.startTime < navEntry.domContentLoadedEventStart;
+  return navEntry &&
+    inpEntry &&
+    inpEntry.startTime < navEntry.domContentLoadedEventStart;
 }
 
 function getDebugInfo(name, attribution) {
@@ -90,7 +94,8 @@ function getDebugInfo(name, attribution) {
       return {
         debug_target: attribution.eventTarget,
         debug_event: attribution.eventEntry?.name,
-        debug_timing: wasFIDBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
+        debug_timing:
+          wasFIDBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
         event_time: attribution.eventEntry?.startTime,
       };
     } else if (name === 'CLS') {
@@ -102,7 +107,8 @@ function getDebugInfo(name, attribution) {
       return {
         debug_target: attribution.eventTarget,
         debug_event: attribution.eventEntry?.name,
-        debug_timing: wasINPBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
+        debug_timing:
+          wasINPBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
         event_time: attribution.eventEntry?.startTime,
       };
     }
