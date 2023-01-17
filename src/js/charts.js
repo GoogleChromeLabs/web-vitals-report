@@ -223,7 +223,7 @@ function drawDebugInfo(pages) {
           </th>
           <th class="Table-debugHeader" colspan="4" id="${path}">${path}</th>
         </tr>
-        ${['LCP', 'FID', 'CLS'].map((metric) => `
+        ${['LCP', 'FID', 'CLS', 'INP'].map((metric) => `
           ${Object.keys(page[metric]).map((segment) => {
             let debugEntries = page[metric][segment].debug;
             if (debugEntries) {
@@ -306,9 +306,7 @@ function score(metric, p75) {
     LCP: [2500, 4000],
     FID: [100, 300],
     CLS: [0.1, 0.25],
-    // LCP: [1100, 2000],
-    // FID: [4, 10],
-    // CLS: [0.1, 0.25],
+    INP: [200, 500],
   };
   if (p75 <= thresholds[metric][0]) {
     return 'good';
@@ -379,6 +377,19 @@ export function renderCharts(report, reportOpts) {
         }
         if (maxValue > 1) {
           bucketSize = 0.1;
+        }
+        break;
+      case 'INP':
+        maxValue = Math.max(Math.ceil(p95 / 50) * 50, 50);
+        bucketSize = 1;
+        if (maxValue > 100) {
+          bucketSize = 2;
+        }
+        if (maxValue > 300) {
+          bucketSize = 5;
+        }
+        if (maxValue > 1000) {
+          bucketSize = 10;
         }
         break;
     }

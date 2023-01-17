@@ -56,6 +56,7 @@ function validateOpts(opts = {}) {
     lcpName: 'LCP',
     fidName: 'FID',
     clsName: 'CLS',
+    inpName: 'INP',
     filters: '',
     debugDim: '',
     ...opts,
@@ -319,6 +320,11 @@ const app = (state, data) => {
                 <label>CLS name</label>
                 <input id="opts:clsName" type="text"
                        .value=${opts.clsName}>
+              </div>
+              <div class="Form-field">
+                <label>INP name</label>
+                <input id="opts:inpName" type="text"
+                       .value=${opts.inpName}>
               </div>
             </div>
             <div class="Form-field">
