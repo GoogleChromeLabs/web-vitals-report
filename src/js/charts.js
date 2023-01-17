@@ -19,7 +19,7 @@
 import {e, round} from './utils.js';
 
 
-const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)'];
+const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)', '#777', '#a7cccc'];
 
 function bucketValues(arrayOfValues, {maxValue, bucketSize = 10} = {}) {
   maxValue = maxValue || arrayOfValues[arrayOfValues.length - 1];
@@ -177,7 +177,8 @@ function drawTable(id, dimensionName, dimensionData) {
       ${dimensionData.slice(0, 5).map(([dimension, values]) => {
         return segmentNames.map((segment, i) => `<tr>
           ${i === 0
-            ? `<td class="Table-dimension" rowspan="2">${e(dimension)}</td>`
+            ? '<td class="Table-dimension"' +
+              ` rowspan="${segmentNames.length}">${e(dimension)}</td>`
             : ''}
           <td class="Table-segment">${e(segment)}</td>
           ${metricNames.map((metric) => {
@@ -223,7 +224,7 @@ function drawDebugInfo(pages) {
           </th>
           <th class="Table-debugHeader" colspan="4" id="${path}">${path}</th>
         </tr>
-        ${['LCP', 'FID', 'CLS'].map((metric) => `
+        ${['LCP', 'FID', 'CLS', 'INP'].map((metric) => `
           ${Object.keys(page[metric]).map((segment) => {
             let debugEntries = page[metric][segment].debug;
             if (debugEntries) {
@@ -306,9 +307,7 @@ function score(metric, p75) {
     LCP: [2500, 4000],
     FID: [100, 300],
     CLS: [0.1, 0.25],
-    // LCP: [1100, 2000],
-    // FID: [4, 10],
-    // CLS: [0.1, 0.25],
+    INP: [200, 500],
   };
   if (p75 <= thresholds[metric][0]) {
     return 'good';
@@ -379,6 +378,19 @@ export function renderCharts(report, reportOpts) {
         }
         if (maxValue > 1) {
           bucketSize = 0.1;
+        }
+        break;
+      case 'INP':
+        maxValue = Math.max(Math.ceil(p95 / 50) * 50, 50);
+        bucketSize = 1;
+        if (maxValue > 100) {
+          bucketSize = 2;
+        }
+        if (maxValue > 300) {
+          bucketSize = 5;
+        }
+        if (maxValue > 1000) {
+          bucketSize = 10;
         }
         break;
     }

@@ -26,6 +26,7 @@ export async function getWebVitalsData(state, opts) {
     [opts.lcpName]: 'LCP',
     [opts.fidName]: 'FID',
     [opts.clsName]: 'CLS',
+    [opts.inpName]: 'INP',
   };
 
   if (rows.length === 0) {
@@ -35,10 +36,22 @@ export async function getWebVitalsData(state, opts) {
   const getSegmentsObj = (getDefaultValue = () => []) => {
     const segmentIdA = reportRequest.segments[0].segmentId.slice(6);
     const segmentIdB = reportRequest.segments[1].segmentId.slice(6);
-    return {
+    const retValue = {
       [getSegmentNameById(segmentIdA)]: getDefaultValue(),
       [getSegmentNameById(segmentIdB)]: getDefaultValue(),
     };
+
+    // As Segments C and D are optional they may not exist
+    if (reportRequest.segments.length > 2) {
+      const segmentIdC = reportRequest.segments[2].segmentId.slice(6);
+      retValue[getSegmentNameById(segmentIdC)] = getDefaultValue();
+    }
+    if (reportRequest.segments.length > 3) {
+      const segmentIdD = reportRequest.segments[3].segmentId.slice(6);
+      retValue[getSegmentNameById(segmentIdD)] = getDefaultValue();
+    }
+
+    return retValue;
   };
 
   const getMetricsObj = (getDefaultValue = getSegmentsObj) => {
@@ -46,6 +59,7 @@ export async function getWebVitalsData(state, opts) {
       LCP: getDefaultValue(),
       FID: getDefaultValue(),
       CLS: getDefaultValue(),
+      INP: getDefaultValue(),
     };
   };
 
@@ -81,14 +95,15 @@ export async function getWebVitalsData(state, opts) {
       value = value / 1000;
     }
 
-    // Even though the report limits `metric` values to LCP, FID, and CLS,
+    // Even though the report limits `metric` values to LCP, FID, CLS, and INP
     // for reports with more than a million rows of data, Google Analytics
     // will aggregate everything after the first million rows into and "(other)"
     // bucket, which skews the data and makes the report useless.
     // The only solution to this is to make more granular requests (e.g.
     // reduce the date range or add filters) and manually combine the data
     // yourself.
-    if (metric !== 'LCP' && metric !== 'FID' && metric !== 'CLS') {
+    if (metric !== 'LCP' && metric !== 'FID'
+        && metric !== 'CLS' && metric !== 'INP') {
       throw new WebVitalsError('unexpected_metric', metric);
     }
 
@@ -175,7 +190,8 @@ function parseFilters(filtersExpression) {
 }
 
 function buildReportRequest(state, opts) {
-  const {viewId, startDate, endDate, segmentA, segmentB} = state;
+  const {viewId, startDate, endDate,
+         segmentA, segmentB, segmentC, segmentD} = state;
 
   const dimensions = [
     {name: 'ga:segment'},
@@ -194,12 +210,25 @@ function buildReportRequest(state, opts) {
     {
       dimensionName: opts.metricNameDim,
       operator: 'IN_LIST',
-      expressions: [opts.lcpName, opts.fidName, opts.clsName],
+      expressions: [opts.lcpName, opts.fidName, opts.clsName, opts.inpName],
     },
   ];
 
   if (opts.active && opts.filters) {
     filters = filters.concat(parseFilters(opts.filters));
+  }
+
+  // We always have at least two segments
+  const segments = [
+    {segmentId: `gaid::${segmentA}`},
+    {segmentId: `gaid::${segmentB}`},
+  ];
+  // And then optionally 1 or 2 more
+  if (segmentC) {
+    segments.push({segmentId: `gaid::${segmentC}`});
+  }
+  if (segmentD) {
+    segments.push({segmentId: `gaid::${segmentD}`});
   }
 
   return {
@@ -208,10 +237,7 @@ function buildReportRequest(state, opts) {
     // samplingLevel: 'SMALL',
     includeEmptyRows: true,
     dateRanges: [{startDate, endDate}],
-    segments: [
-      {segmentId: `gaid::${segmentA}`},
-      {segmentId: `gaid::${segmentB}`},
-    ],
+    segments: segments,
     metrics: [{expression: 'ga:eventValue'}],
     dimensions,
     dimensionFilterClauses: {
