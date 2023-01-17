@@ -26,6 +26,7 @@ export async function getWebVitalsData(state, opts) {
     [opts.lcpName]: 'LCP',
     [opts.fidName]: 'FID',
     [opts.clsName]: 'CLS',
+    [opts.inpName]: 'INP',
   };
 
   if (rows.length === 0) {
@@ -58,6 +59,7 @@ export async function getWebVitalsData(state, opts) {
       LCP: getDefaultValue(),
       FID: getDefaultValue(),
       CLS: getDefaultValue(),
+      INP: getDefaultValue(),
     };
   };
 
@@ -93,14 +95,14 @@ export async function getWebVitalsData(state, opts) {
       value = value / 1000;
     }
 
-    // Even though the report limits `metric` values to LCP, FID, and CLS,
+    // Even though the report limits `metric` values to LCP, FID, CLS, and INP
     // for reports with more than a million rows of data, Google Analytics
     // will aggregate everything after the first million rows into and "(other)"
     // bucket, which skews the data and makes the report useless.
     // The only solution to this is to make more granular requests (e.g.
     // reduce the date range or add filters) and manually combine the data
     // yourself.
-    if (metric !== 'LCP' && metric !== 'FID' && metric !== 'CLS') {
+    if (metric !== 'LCP' && metric !== 'FID' && metric !== 'CLS' && metric !== 'INP') {
       throw new WebVitalsError('unexpected_metric', metric);
     }
 
@@ -206,7 +208,7 @@ function buildReportRequest(state, opts) {
     {
       dimensionName: opts.metricNameDim,
       operator: 'IN_LIST',
-      expressions: [opts.lcpName, opts.fidName, opts.clsName],
+      expressions: [opts.lcpName, opts.fidName, opts.clsName, opts.inpName],
     },
   ];
 

@@ -16,7 +16,7 @@
 
 /* global gtag */
 
-import {getCLS, getFCP, getFID, getLCP, getTTFB} from 'web-vitals';
+import {onCLS, onFCP, onFID, onLCP, onINP, onTTFB} from 'web-vitals/attribution';
 import {getSegmentNameById} from './api.js';
 
 const getConfig = (id) => {
@@ -53,6 +53,7 @@ const thresholds = {
   FCP: [1800, 3000],
   FID: [100, 300],
   LCP: [2500, 4000],
+  INP: [200, 500],
   TTFB: [800, 1800],
 };
 
@@ -66,78 +67,53 @@ function getRating(value, thresholds) {
   return 'good';
 }
 
-function getSelector(node, maxLen = 100) {
-  let sel = '';
-  try {
-    while (node && node.nodeType !== 9) {
-      const part = node.id ? '#' + node.id : node.nodeName.toLowerCase() + (
-        (node.className && node.className.length) ?
-        '.' + Array.from(node.classList.values()).join('.') : '');
-      if (sel.length + part.length > maxLen - 1) return sel || part;
-      sel = sel ? part + '>' + sel : part;
-      if (node.id) break;
-      node = node.parentNode;
-    }
-  } catch (err) {
-    // Do nothing...
-  }
-  return sel;
-}
-
-function getLargestLayoutShiftEntry(entries) {
-  return entries.reduce((a, b) => a && a.value > b.value ? a : b);
-}
-
-function getLargestLayoutShiftSource(sources) {
-  return sources.reduce((a, b) => {
-    return a.node && a.previousRect.width * a.previousRect.height >
-        b.previousRect.width * b.previousRect.height ? a : b;
-  });
-}
-
 function wasFIDBeforeDCL(fidEntry) {
   const navEntry = performance.getEntriesByType('navigation')[0];
-  return navEntry && fidEntry.startTime < navEntry.domContentLoadedEventStart;
+  return navEntry && fidEntry && fidEntry.startTime < navEntry.domContentLoadedEventStart;
 }
 
-function getDebugInfo(name, entries = []) {
+function wasINPBeforeDCL(inpEntry) {
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  return navEntry && inpEntry && inpEntry.startTime < navEntry.domContentLoadedEventStart;
+}
+
+function getDebugInfo(name, attribution) {
   // In some cases there won't be any entries (e.g. if CLS is 0,
   // or for LCP after a bfcache restore), so we have to check first.
-  if (entries.length) {
+  if (attribution) {
     if (name === 'LCP') {
-      const lastEntry = entries[entries.length - 1];
       return {
-        debug_target: getSelector(lastEntry.element),
-        event_time: lastEntry.startTime,
+        debug_target: attribution.largestShiftTarget,
+        event_time: attribution.startTime,
       };
     } else if (name === 'FID') {
-      const firstEntry = entries[0];
       return {
-        debug_target: getSelector(firstEntry.target),
-        debug_event: firstEntry.name,
-        debug_timing: wasFIDBeforeDCL(firstEntry) ? 'pre_dcl' : 'post_dcl',
-        event_time: firstEntry.startTime,
+        debug_target: attribution.eventTarget,
+        debug_event: attribution.eventEntry?.name,
+        debug_timing: wasFIDBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
+        event_time: attribution.eventEntry?.startTime,
       };
     } else if (name === 'CLS') {
-      const largestEntry = getLargestLayoutShiftEntry(entries);
-      if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
-        const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
-        if (largestSource) {
-          return {
-            debug_target: getSelector(largestSource.node),
-            event_time: largestEntry.startTime,
-          };
-        }
-      }
+      return {
+        debug_target: attribution.largestShiftTarget,
+        event_time: attribution.largestShiftEntry?.startTime,
+      };
+    } else if (name === 'INP') {
+      return {
+        debug_target: attribution.eventTarget,
+        debug_event: attribution.eventEntry?.name,
+        debug_timing: wasINPBeforeDCL(attribution.eventEntry) ? 'pre_dcl' : 'post_dcl',
+        event_time: attribution.eventEntry?.startTime,
+      };
     }
   }
-  // Return default/empty params in case there are no entries.
+  // Return default/empty params in case there was no attribution data set.
   return {
     debug_target: '(not set)',
   };
 }
 
-function handleMetric({name, value, delta, id, entries}) {
+function handleMetric({name, value, delta, id, attribution}) {
   const params = {
     value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     event_category: 'Web Vitals',
@@ -146,29 +122,29 @@ function handleMetric({name, value, delta, id, entries}) {
     metric_delta: delta,
     metric_rating: getRating(value, thresholds[name]),
     non_interaction: true,
-    ...getDebugInfo(name, entries),
+    ...getDebugInfo(name, attribution),
   };
 
-  if (name === 'TTFB' && entries.length) {
-    const navEntry = entries[0];
+  if (name === 'TTFB' && attribution) {
     Object.assign(params, {
-      fetch_start: navEntry.fetchStart,
-      domain_lookup_start: navEntry.domainLookupStart,
-      connect_start: navEntry.connectStart,
-      request_start: navEntry.requestStart,
-      response_start: navEntry.responseStart,
+      fetch_start: attribution.navigationEntry.fetchStart,
+      domain_lookup_start: attribution.navigationEntry.domainLookupStart,
+      connect_start: attribution.navigationEntry.connectStart,
+      request_start: attribution.navigationEntry.requestStart,
+      response_start: attribution.navigationEntry.responseStart,
     });
   }
 
   gtag('event', name, params);
 }
 
-export function measureWebVitals() {
-  getCLS(handleMetric);
-  getFCP(handleMetric);
-  getFID(handleMetric);
-  getLCP(handleMetric);
-  getTTFB(handleMetric);
+function measureWebVitals() {
+  onCLS(handleMetric);
+  onFCP(handleMetric);
+  onFID(handleMetric);
+  onLCP(handleMetric);
+  onINP(handleMetric);
+  onTTFB(handleMetric);
 }
 
 function anonymizeSegment(id) {
