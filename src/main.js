@@ -119,8 +119,8 @@ function onDateRangeChange(newValue) {
 
 function onSegmentsRecommendedChange(newValue) {
   if (newValue) {
-    const [segmentA, segmentB] = newValue.split(',');
-    setState({segmentA, segmentB});
+    const [segmentA, segmentB, segmentC, segmentD] = newValue.split(',');
+    setState({segmentA, segmentB, segmentC, segmentD});
   }
 }
 
@@ -280,6 +280,34 @@ const app = (state, data) => {
                   </optgroup>
                   <optgroup label="Custom Segments">
                     ${renderOpts(state.segmentB, data.segmentOpts.CUSTOM)}
+                  </optgroup>
+                ` : null}
+              </select>
+            </div>
+            <div class="Form-field">
+              <label>Third segment (optional)</label>
+              <select id="segmentC">
+                <option value="">None</option>
+                ${data.segmentOpts ? html`
+                  <optgroup label="Built-in Segments">
+                    ${renderOpts(state.segmentC, data.segmentOpts.BUILT_IN)}
+                  </optgroup>
+                  <optgroup label="Custom Segments">
+                    ${renderOpts(state.segmentC, data.segmentOpts.CUSTOM)}
+                  </optgroup>
+                ` : null}
+              </select>
+            </div>
+            <div class="Form-field">
+              <label>Fourth segment (optional)</label>
+              <select id="segmentD">
+                <option value="">None</option>
+                ${data.segmentOpts ? html`
+                  <optgroup label="Built-in Segments">
+                    ${renderOpts(state.segmentD, data.segmentOpts.BUILT_IN)}
+                  </optgroup>
+                  <optgroup label="Custom Segments">
+                    ${renderOpts(state.segmentD, data.segmentOpts.CUSTOM)}
                   </optgroup>
                 ` : null}
               </select>

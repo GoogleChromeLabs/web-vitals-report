@@ -40,7 +40,7 @@ After you've logged in, a form will appear asking you to select:
 
 1. Your Google Analytics account (and [property](https://support.google.com/analytics/answer/2649554) and [view](https://support.google.com/analytics/answer/2649553))
 2. A date range to query
-3. Two [segments](https://support.google.com/analytics/answer/3123951) to compare results for
+3. Select the [segments](https://support.google.com/analytics/answer/3123951) to compare results for
 
 While the app does suggest a few interesting segments to compare, you're not limited to just these suggestions. If you select the bottom option "Choose segments", you'll be able to pick any segment you want.
 

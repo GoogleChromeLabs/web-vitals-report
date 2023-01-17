@@ -19,7 +19,7 @@
 import {e, round} from './utils.js';
 
 
-const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)'];
+const COLORS = ['#aaa', 'hsla(218, 88%, 50%, 0.7)', '#777', '#a7cccc'];
 
 function bucketValues(arrayOfValues, {maxValue, bucketSize = 10} = {}) {
   maxValue = maxValue || arrayOfValues[arrayOfValues.length - 1];
@@ -177,7 +177,7 @@ function drawTable(id, dimensionName, dimensionData) {
       ${dimensionData.slice(0, 5).map(([dimension, values]) => {
         return segmentNames.map((segment, i) => `<tr>
           ${i === 0
-            ? `<td class="Table-dimension" rowspan="2">${e(dimension)}</td>`
+            ? `<td class="Table-dimension" rowspan="${segmentNames.length}">${e(dimension)}</td>`
             : ''}
           <td class="Table-segment">${e(segment)}</td>
           ${metricNames.map((metric) => {

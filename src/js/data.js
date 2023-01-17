@@ -36,10 +36,22 @@ export async function getWebVitalsData(state, opts) {
   const getSegmentsObj = (getDefaultValue = () => []) => {
     const segmentIdA = reportRequest.segments[0].segmentId.slice(6);
     const segmentIdB = reportRequest.segments[1].segmentId.slice(6);
-    return {
+    let retValue = {
       [getSegmentNameById(segmentIdA)]: getDefaultValue(),
       [getSegmentNameById(segmentIdB)]: getDefaultValue(),
-    };
+    }
+    
+    // As Segments C and D are optional they may not exist
+    if (reportRequest.segments.length > 2) {
+      const segmentIdC = reportRequest.segments[2].segmentId.slice(6);
+      retValue[getSegmentNameById(segmentIdC)] = getDefaultValue()
+    }
+    if (reportRequest.segments.length > 3) {
+      const segmentIdD = reportRequest.segments[3].segmentId.slice(6);
+      retValue[getSegmentNameById(segmentIdD)] = getDefaultValue()
+    }
+    
+    return retValue;
   };
 
   const getMetricsObj = (getDefaultValue = getSegmentsObj) => {
@@ -177,7 +189,7 @@ function parseFilters(filtersExpression) {
 }
 
 function buildReportRequest(state, opts) {
-  const {viewId, startDate, endDate, segmentA, segmentB} = state;
+  const {viewId, startDate, endDate, segmentA, segmentB, segmentC, segmentD} = state;
 
   const dimensions = [
     {name: 'ga:segment'},
@@ -204,16 +216,26 @@ function buildReportRequest(state, opts) {
     filters = filters.concat(parseFilters(opts.filters));
   }
 
+  // We always have at least two segments
+  let segments = [
+    {segmentId: `gaid::${segmentA}`},
+    {segmentId: `gaid::${segmentB}`},
+  ];
+  // And then optionally 1 or 2 more
+  if (segmentC) {
+    segments.push({segmentId: `gaid::${segmentC}`})
+  }
+  if (segmentD) {
+    segments.push({segmentId: `gaid::${segmentD}`})
+  }
+
   return {
     viewId,
     pageSize: PAGE_SIZE,
     // samplingLevel: 'SMALL',
     includeEmptyRows: true,
     dateRanges: [{startDate, endDate}],
-    segments: [
-      {segmentId: `gaid::${segmentA}`},
-      {segmentId: `gaid::${segmentB}`},
-    ],
+    segments: segments,
     metrics: [{expression: 'ga:eventValue'}],
     dimensions,
     dimensionFilterClauses: {

@@ -148,7 +148,7 @@ function measureWebVitals() {
 }
 
 function anonymizeSegment(id) {
-  if (id.match(/^-\d+$/)) {
+  if (id && id.match(/^-\d+$/)) {
     return getSegmentNameById(id);
   } else {
     return 'Custom Segment';
@@ -175,6 +175,8 @@ export function measureReport({state, duration, report, error}) {
     segments: [
       anonymizeSegment(state.segmentA),
       anonymizeSegment(state.segmentB),
+      anonymizeSegment(state.segmentC),
+      anonymizeSegment(state.segmentD),
     ].sort().join(', '),
     config: anonymizeConfig(state),
     event_category: 'Usage',
