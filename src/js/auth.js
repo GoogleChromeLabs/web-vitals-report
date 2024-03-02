@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,49 +14,49 @@
  * limitations under the License.
  */
 
-/* global gapi */
-
 // Utility methods for dealing with Google auth:
-// https://developers.google.com/identity/sign-in/web/reference
+// https://developers.google.com/identity/oauth2/web/guides/use-token-model
+
+let tokenClient;
+let accessToken;
+
+export async function initAuthClient(postAuthFunction) {
+  tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: window.clientId,
+      scope: window.scope,
+      callback: (tokenResponse) => {
+        accessToken = tokenResponse.access_token;
+        // store token in sessionStorage for page reloads
+        sessionStorage.setItem("access_token", accessToken);
+        postAuthFunction();
+      },
+  });
+}
+
+export async function signoutAccessToken() {
+  accessToken = null;
+  sessionStorage.removeItem("access_token");
+}
+
+export async function refreshAccessToken() {
+  await tokenClient.requestAccessToken();
+  // store token in sessionStorage for page reloads
+  sessionStorage.setItem("access_token", accessToken);
+  return getAccessToken();;
+}
 
 export async function checkAuthStatus() {
-  // This is set on the window in `index.html`.
-  await window.authorizeUser;
-
-  return getAuthInstance().isSignedIn.get();
+  return !!getAccessToken();
 }
 
-export function getAuthInstance() {
-  return gapi.auth2.getAuthInstance();
-}
-
-// Can only be called if the user is signed in.
+// Should only be called if the user is signed in
+// but even if it's blank or invalid, the API call will fail
+// and then authentication screen will be shown again.
 export function getAccessToken() {
-  const googleUser = getAuthInstance().currentUser.get();
-  const authResponse = googleUser.getAuthResponse(true);
-  return authResponse.access_token;
-}
 
-export function onSignInChange(callback) {
-  getAuthInstance().isSignedIn.listen(callback);
-}
-
-export async function userIsSignedIn() {
-  const isSignedIn = await checkAuthStatus();
-
-  await new Promise((resolve, reject) => {
-    gapi.signin2.render('google-signin2', {
-      width: 240,
-      height: 50,
-      longtitle: true,
-      theme: 'dark',
-      onsuccess: resolve,
-      onfailure: reject,
-    });
-    // If the user is already signed in, render the button anyway but
-    // resolve immediately. (We render in case the user signs out.)
-    if (isSignedIn) {
-      resolve();
-    }
-  });
+  // If token is not set, then check sessionStorage (in case of page reloads)
+  if (!accessToken) {
+    accessToken = sessionStorage.getItem("access_token");
+  }
+  return accessToken;
 }

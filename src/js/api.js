@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {openDB} from 'idb';
 import {measureCaughtError} from './analytics.js';
-import {getAccessToken} from './auth.js';
+import {getAccessToken, refreshAccessToken} from './auth.js';
 import {progress} from './Progress.js';
 import {get} from './store.js';
 import {dateOffset, Deferred, getDatesInRange, hashObj, mergeSortedArrays, toISODate} from './utils.js';
@@ -67,6 +67,10 @@ const segmentMap = new Map();
 export async function getSegments() {
   if (!segments) {
     segments = await makeManagementAPIRequest('segments');
+
+    if (!segments || !segments[0]) {
+      return;
+    }
 
     for (const segment of segments) {
       // Rename the "Desktop and Tablet Traffic" segment to "Desktop Traffic"
@@ -204,7 +208,7 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
     incrementConcurrentRequests();
     await concurrentRequestsCountLessThanMax();
 
-    const response = await fetch(REPORTING_API_URL, {
+    let response = await fetch(REPORTING_API_URL, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({
@@ -213,9 +217,25 @@ export async function makeReportingAPIRequest(reportRequest, signal) {
       signal,
     });
 
-    const json = await response.json();
+    let json = await response.json();
+
+    // If it fails with auth error, then try a refresh and a second attempt
+    if (!response.ok && json.error.code === 401) {
+        await refreshAccessToken();
+        response = await fetch(REPORTING_API_URL, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            reportRequests: [reportRequest],
+          }),
+          signal,
+        });
+
+        json = await response.json();
+    }
+
     if (!response.ok) {
-      throw new Error(`${json.error.code}: ${json.error.message}`);
+        throw new Error(`${json.error.code}: ${json.error.message}`);
     }
     return json.reports[0];
   } finally {
