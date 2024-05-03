@@ -39,7 +39,7 @@
     "cssnano": "^5.0.5",
     "eslint": "^7.27.0",
     "eslint-config-google": "^0.14.0",
-    "firebase-tools": "^13.3.0",
+    "firebase-tools": "^13.6.0",
     "fs-extra": "^10.0.0",
     "globby": "^11.0.3",
     "husky": "^6.0.0",
