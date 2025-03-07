@@ -1,4 +1,6 @@
-# ⚡ Web Vitals Report
+# ⚡ Web Vitals Report [Archived]
+
+**Note: This project has been archived and is no longer being actively maintained. Additionally, the [Web Vitals Report](https://web-vitals-report.web.app) is no longer available online.**
 
 The [Web Vitals Report](https://web-vitals-report.web.app) is a web app that makes it easy for users of the [web-vitals](https://github.com/GoogleChrome/web-vitals/) JavaScript library to create custom visualizations of the data they've [sent to Google Analytics](https://github.com/GoogleChrome/web-vitals/#send-the-results-to-google-analytics). The app is available to use as a standalone tool, or you can fork it and customize it to your needs.
 
